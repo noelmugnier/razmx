@@ -1,0 +1,31 @@
+@inherits HtmxPage
+@page "/weathers"
+@page "/"
+
+@{
+    Title = "Weather Forecasts";
+}
+
+<HtmxLayout Layout="@typeof(MainLayout)">
+    <PageTitle>@Title</PageTitle>
+    <HeadContent>
+        <meta name="ob:test"/>
+    </HeadContent>
+
+    <h1>Index</h1>
+
+    <NavLink Match="NavLinkMatch.Prefix" href="/weathers" hx-target="#content">Test</NavLink>
+
+    <div class="text-center">
+        <h1 class="display-4">Welcome</h1>
+        <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+    </div>
+
+    <button hx-get="/components/forecasts?ok=tre" hx-target="#forecasts">
+        Refresh
+    </button>
+
+    <div id="forecasts">
+        <Forecasts/>
+    </div>
+</HtmxLayout>

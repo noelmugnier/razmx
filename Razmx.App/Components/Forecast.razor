@@ -1,0 +1,24 @@
+@inherits HtmxComponent
+
+<h3>@Value.Summary</h3>
+
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title">Date: @Value.Date</h5>
+        <h6 class="card-subtitle mb-2 text-muted">Temperature: @Value.TemperatureC</h6>
+    </div>
+</div>
+
+@code
+{
+    [Parameter] public string Id { get; set; } = string.Empty;
+
+    [Parameter] public Forecasts.WeatherForecast? Value { get; set; }
+
+    protected override void OnInitialized()
+    {
+        Value ??= new Forecasts.WeatherForecast(new DateOnly(2023, 10, 02), 13, "Loading...");
+        base.OnInitialized();
+    }
+
+}
