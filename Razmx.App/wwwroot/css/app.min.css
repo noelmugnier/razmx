@@ -561,20 +561,12 @@ video {
   display: flex;
 }
 
-.h-screen {
-  height: 100vh;
-}
-
 .w-full {
   width: 100%;
 }
 
 .max-w-6xl {
   max-width: 72rem;
-}
-
-.flex-grow {
-  flex-grow: 1;
 }
 
 .flex-col {
@@ -604,11 +596,6 @@ video {
   padding-right: 3rem;
 }
 
-.py-20 {
-  padding-top: 5rem;
-  padding-bottom: 5rem;
-}
-
 .py-4 {
   padding-top: 1rem;
   padding-bottom: 1rem;
@@ -616,4 +603,8 @@ video {
 
 .text-center {
   text-align: center;
+}
+
+.font-extrabold {
+  font-weight: 800;
 }

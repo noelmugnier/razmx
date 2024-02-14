@@ -8,11 +8,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <AdditionalFiles Include="Components\Forecast.razor" />
-      <AdditionalFiles Include="Components\Forecasts.razor" />
-    </ItemGroup>
-
-    <ItemGroup>
       <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="8.0.2" />
       <PackageReference Include="Tailwind.Extensions.AspNetCore" Version="1.0.0" />
     </ItemGroup>
@@ -22,13 +17,9 @@
         <UpToDateCheckBuilt Include="tailwind.config.js" Set="Css" />
     </ItemGroup>
 
+    <!--
     <Target Name="Tailwind" BeforeTargets="Build">
-        <Exec Command="npm run tailwind:build"/>
+        <Exec Command="npm run tailwind:build" />
     </Target>
-    
-    <ItemGroup>
-        <!-- extends watching group to include *.razor files -->
-        <Watch Include="**\*.razor" />
-    </ItemGroup>
-
+-->
 </Project>

@@ -4,3 +4,5 @@ obj/
 riderModule.iml
 /_ReSharper.Caches/
 Razmx.App/node_modules
+.vs
+Razmx.App/Razmx.App.csproj.user

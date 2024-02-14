@@ -1,7 +1,6 @@
 using Razmx.App;
-using Razmx.App.Pages.Shared;
+using Razmx.App.Pages.Forecast;
 using Tailwind;
-using Index = Razmx.App.Pages.Index;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,16 +10,14 @@ builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (!app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    app.UseHsts();
+    _ = app.RunTailwind("tailwind:dev");
 }
 else
 {
-    _ = app.RunTailwind("tailwind:dev", "./");
+    app.UseExceptionHandler("/Error");
+    app.UseHsts();
 }
 
 app.UseHttpsRedirection();
@@ -30,7 +27,13 @@ app.UseRouting();
 app.UseAntiforgery();
 app.UseAuthorization();
 
-// app.MapHtmxRoutes();
+app.MapHtmxRoutes()
+    .MapRootComponent<ListForecasts>();
 
-app.MapRazorComponents<Index>();
+app.MapPost("/api/forecasts",
+    (HttpContext context) => Results.HtmxLocation<ForecastDetails>(context, new { Id = Guid.NewGuid().ToString() }));
+
+app.MapPut("/api/forecasts/{id}",
+    (HttpContext context, string id) => Results.HtmxRedirect<ForecastDetails>(context, new { Id = id }));
+
 app.Run();

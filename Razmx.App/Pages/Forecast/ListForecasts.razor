@@ -1,0 +1,63 @@
+@inherits HtmxPage
+@page "/forecasts"
+@{
+    Title = "Weather Forecasts";
+}
+
+<HtmxLayout Layout="@typeof(Main)">
+    <PageTitle>@Title</PageTitle>
+
+    <h3>Index</h3>
+
+    <NavLink Match="NavLinkMatch.Prefix" AdditionalAttributes="@GetLinkAttributes("/forecasts", Main.GetRouterId())">Test</NavLink>
+
+    <div class="text-center">
+        <h1 class="display-4 font-extrabold">Welcome</h1>
+        <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+    </div>
+
+    <button hx-post="/api/forecasts" hx-headers='{"hx-retarget": "@Main.GetRouterId()"}'>
+        Create
+    </button>
+
+    <button hx-put="/api/forecasts/1234">
+        Update
+    </button>
+
+    <div id="forecasts">
+        <Forecasts Value="_forecasts"/>
+    </div>
+</HtmxLayout>
+
+@code{
+    public IReadOnlyDictionary<string, object> GetLinkAttributes(string href, string? hxTarget = null)
+    {
+        var attributes = new Dictionary<string, object>
+        {
+            { "href", href }
+        };
+
+        if (hxTarget != null)
+        {
+            attributes["hx-target"] = hxTarget;
+        }
+
+        return attributes.AsReadOnly();
+    }
+
+    private static string[] summaries = new[]
+    {
+        "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
+    };
+
+    private IEnumerable<WeatherForecast> _forecasts = Enumerable.Range(1, 5).Select(index =>
+            new WeatherForecast
+            (
+                DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
+                Random.Shared.Next(-20, 55),
+                summaries[Random.Shared.Next(summaries.Length)],
+                Guid.NewGuid().ToString()
+            ))
+        .ToArray();
+
+}

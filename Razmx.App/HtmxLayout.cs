@@ -58,6 +58,8 @@ public class HtmxLayout : IComponent
         RenderFragment customFragment = ChildContent;
         if (ChildContent.Target is HtmxPage page && isHtmxRequest)
         {
+            HttpContextAccessor.HttpContext?.Response.Headers.TryAdd("Vary", "HX-Request");
+
             customFragment = builder =>
             {
                 builder.OpenElement(0, "title");
@@ -96,16 +98,4 @@ public class HtmxLayout : IComponent
 
     private static Type? GetParentLayoutType(Type type)
         => type.GetCustomAttribute<LayoutAttribute>()?.LayoutType;
-}
-
-public class HtmxPage : HtmxComponent
-{
-    public string Title { get; set; }
-
-    [Parameter(CaptureUnmatchedValues = true)]
-    public Dictionary<string, object> QueryParams { get; set; }
-}
-
-public class HtmxComponent : ComponentBase
-{
 }
