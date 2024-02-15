@@ -1,10 +1,12 @@
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Primitives;
-using Razmx.App;
 
-public static partial class Results
+namespace Razmx.Core;
+
+public static class HtmxResults
 {
-    public static IResult HtmxLocation<TPage>(HttpContext context, object? routeValues = null)
-        where TPage : HtmxPage
+    public static IResult Location<TPage>(HttpContext context, object? routeValues = null)
+        where TPage : IComponent
     {
         var routeName = typeof(TPage).FullName!;
         var path = GeneratePathForRouteName<TPage>(context, routeName, routeValues);
@@ -22,8 +24,8 @@ public static partial class Results
         return TypedResults.CreatedAtRoute(routeName, routeValues);
     }
 
-    public static IResult HtmxRedirect<TPage>(HttpContext context, object? routeValues = null)
-        where TPage : HtmxPage
+    public static IResult Redirect<TPage>(HttpContext context, object? routeValues = null)
+        where TPage : IComponent
     {
         var routeName = typeof(TPage).FullName!;
         var path = GeneratePathForRouteName<TPage>(context, routeName, routeValues);
@@ -34,7 +36,7 @@ public static partial class Results
     }
 
     private static string? GeneratePathForRouteName<TPage>(HttpContext context, string routeName, object? routeValues)
-        where TPage : HtmxPage
+        where TPage : IComponent
     {
         var generator = context.RequestServices.GetRequiredService<LinkGenerator>();
         return generator.GetPathByName(routeName, routeValues);

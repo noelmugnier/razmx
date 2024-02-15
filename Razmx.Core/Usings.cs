@@ -1,0 +1,9 @@
+global using Microsoft.AspNetCore.Http;
+global using Microsoft.AspNetCore.Components;
+global using Microsoft.AspNetCore.Components.Rendering;
+global using Microsoft.AspNetCore.Authorization;
+global using System.Diagnostics.CodeAnalysis;
+global using System.Reflection;
+global using Microsoft.AspNetCore.Builder;
+global using Microsoft.AspNetCore.Http.HttpResults;
+global using Microsoft.AspNetCore.Routing;

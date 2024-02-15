@@ -1,12 +1,6 @@
-@inherits HtmxPage
 @page "/forecasts"
-@{
-    Title = "Weather Forecasts";
-}
 
-<HtmxLayout Layout="@typeof(Main)">
-    <PageTitle>@Title</PageTitle>
-
+<HtmxPage Layout="@typeof(Main)" Title="Weather Forecasts">
     <h3>Index</h3>
 
     <NavLink Match="NavLinkMatch.Prefix" AdditionalAttributes="@GetLinkAttributes("/forecasts", Main.GetRouterId())">Test</NavLink>
@@ -27,7 +21,7 @@
     <div id="forecasts">
         <Forecasts Value="_forecasts"/>
     </div>
-</HtmxLayout>
+</HtmxPage>
 
 @code{
     public IReadOnlyDictionary<string, object> GetLinkAttributes(string href, string? hxTarget = null)

@@ -10,6 +10,7 @@
     <HeadOutlet/>
     <link rel="icon" type="image/png" href="favicon.ico"/>
     <link href="/css/app.min.css" rel="stylesheet"/>
+    <link href="/css/inter.css" rel="stylesheet">
     <script src="/js/htmx.min.js"></script>
 </head>
 
@@ -35,6 +36,7 @@
 
     public static string GetRouterId(string? routerId = null)
     {
-        return $"#{MainRouterId}";
+        return $"#{routerId ?? MainRouterId}";
     }
+
 }

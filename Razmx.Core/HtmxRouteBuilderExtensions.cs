@@ -1,35 +1,32 @@
-using System.Reflection;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Razmx.App.Pages;
-
-namespace Razmx.App;
+namespace Razmx.Core;
 
 public static class HtmxRouteBuilderExtensions
 {
-    public static IEndpointRouteBuilder MapHtmxRoutes(this IEndpointRouteBuilder endpoints)
+    public static IEndpointRouteBuilder MapHtmxRoutes(this IEndpointRouteBuilder endpoints, Type assemblyType, params Type[] typesFromAssemblies)
     {
-        var assemblies = typeof(Main).Assembly.GetTypes();
-        var htmxPages = assemblies.Where(assembly => typeof(HtmxPage).IsAssignableFrom(assembly));
-        foreach (var htmxPage in htmxPages)
+        var types = new List<Type> { assemblyType }.Concat(typesFromAssemblies);
+        foreach(var type in types)
         {
-            var routeAttribute = htmxPage.GetCustomAttribute<RouteAttribute>(true);
-            if (routeAttribute is null)
+            var pages = type.Assembly.GetTypes().Where(type => type.GetCustomAttribute<RouteAttribute>() != null);
+            foreach (var page in pages)
             {
-                continue;
+                var routeAttribute = page.GetCustomAttribute<RouteAttribute>(true);
+                if (routeAttribute is null)
+                {
+                    continue;
+                }
+
+                var routeTemplate = routeAttribute!.Template;
+                var routeName = page.FullName!;
+
+                RegisterEndpoint(endpoints, page, routeTemplate, routeName);
             }
-
-            var routeTemplate = routeAttribute!.Template;
-            var routeName = htmxPage.FullName!;
-
-            RegisterEndpoint(endpoints, htmxPage, routeTemplate, routeName);
         }
 
         return endpoints;
     }
 
-    public static IEndpointRouteBuilder MapRootComponent<TComponent>(this IEndpointRouteBuilder endpoints, string defaultRouteTemplate = "/", string defaultRouteName = "Home") where TComponent : HtmxPage
+    public static IEndpointRouteBuilder WithRootComponent<TComponent>(this IEndpointRouteBuilder endpoints, string defaultRouteTemplate = "/", string defaultRouteName = "Home") where TComponent : IComponent
     {
         var htmxComponent = typeof(TComponent);
         RegisterEndpoint(endpoints, htmxComponent, defaultRouteTemplate, defaultRouteName);

@@ -1,13 +1,8 @@
-@inherits HtmxPage
 @page "/forecasts/{Id}"
-@{
-    Title = _value.Summary;
-}
 
-<HtmxLayout Layout="@typeof(Main)">
-    <PageTitle>@_value.Summary</PageTitle>
+<HtmxPage Layout="@typeof(Main)" Title="@_value.Summary">
     <Forecast Value="_value"/>
-</HtmxLayout>
+</HtmxPage>
 
 @code
 {

@@ -1,4 +1,3 @@
-using Razmx.App;
 using Razmx.App.Pages.Forecast;
 using Tailwind;
 
@@ -27,13 +26,13 @@ app.UseRouting();
 app.UseAntiforgery();
 app.UseAuthorization();
 
-app.MapHtmxRoutes()
-    .MapRootComponent<ListForecasts>();
+app.MapHtmxRoutes(typeof(Main))
+    .WithRootComponent<ListForecasts>();
 
 app.MapPost("/api/forecasts",
-    (HttpContext context) => Results.HtmxLocation<ForecastDetails>(context, new { Id = Guid.NewGuid().ToString() }));
+    (HttpContext context) => HtmxResults.Location<ForecastDetails>(context, new { Id = Guid.NewGuid().ToString() }));
 
 app.MapPut("/api/forecasts/{id}",
-    (HttpContext context, string id) => Results.HtmxRedirect<ForecastDetails>(context, new { Id = id }));
+    (HttpContext context, string id) => HtmxResults.Redirect<ForecastDetails>(context, new { Id = id }));
 
-app.Run();
+await app.RunAsync();
