@@ -1,5 +1,6 @@
 @inherits LayoutComponentBase
 @namespace Razmx.App
+@inject IHttpContextAccessor HttpContextAccessor
 
 <!DOCTYPE html>
 <html lang="en">
@@ -23,6 +24,15 @@
         <h3>
             <a href="/privacy" hx-target="@GetRouterId()">Privacy</a>
         </h3>
+        @if(IsAuthenticated)
+        {
+            <h3>
+                Hello @Username !
+                <form action="/logout" method="post">
+                    <button type="submit" hx-post="/logout">Logout</button>
+                </form>
+            </h3>
+        }
     </nav>
 </header>
 <HtmxRouter RouterId="@MainRouterId" CssClass="bg-white bg-gray-100 flex flex-col">
@@ -33,6 +43,9 @@
 
 @code{
     private static string MainRouterId = "main-router";
+
+    private bool IsAuthenticated => HttpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated == true;
+    private string? Username => HttpContextAccessor.HttpContext?.User.Identity?.Name;
 
     public static string GetRouterId(string? routerId = null)
     {

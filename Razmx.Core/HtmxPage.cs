@@ -53,14 +53,14 @@ public class HtmxPage : IComponent
 
         customFragment = builder =>
         {
-            builder.OpenComponent(0, typeof(PageTitle));
-            builder.AddAttribute(1, "ChildContent", (RenderFragment)(
-                (pageTitleBuilder) =>
-                {
-                    pageTitleBuilder.AddContent(2, Title);
-                }));
-
-            builder.CloseComponent();
+            // builder.OpenComponent(0, typeof(PageTitle));
+            // builder.AddAttribute(1, "ChildContent", (RenderFragment)(
+            //     (pageTitleBuilder) =>
+            //     {
+            //         pageTitleBuilder.AddContent(2, Title);
+            //     }));
+            //
+            // builder.CloseComponent();
             builder.AddContent(3, ChildContent);
         };
 

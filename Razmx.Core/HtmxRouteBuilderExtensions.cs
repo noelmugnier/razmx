@@ -37,7 +37,6 @@ public static class HtmxRouteBuilderExtensions
     private static void RegisterEndpoint(IEndpointRouteBuilder endpoints, Type htmxComponent, string routeTemplate,
         string routeName)
     {
-        var authorizeAttributes = htmxComponent.GetCustomAttributes(typeof(AuthorizeAttribute), true);
         var endpoint = endpoints.MapGet(routeTemplate, (HttpContext context) =>
         {
             var parameters = new Dictionary<string, object?>();
@@ -54,9 +53,12 @@ public static class HtmxRouteBuilderExtensions
             return new RazorComponentResult(htmxComponent, parameters);
         }).WithName(routeName);
 
+        var authorizeAttributes = htmxComponent.GetCustomAttributes(typeof(AuthorizeAttribute), true);
         if (authorizeAttributes.Any())
         {
             endpoint.RequireAuthorization();
         }
+
+        var anonymousAttributes = htmxComponent.GetCustomAttributes(typeof(AllowAnonymousAttribute), true);
     }
 }

@@ -1,0 +1,36 @@
+@page "/login"
+
+<HtmxPage Layout="@typeof(Anonymous)" Title="Login">
+    <h3>Login</h3>
+    <form action="/login" method="post">
+        <AntiforgeryToken/>
+        <input type="text" name="Email" placeholder="Email" value="@Form.Email"/>
+        <input type="password" name="Password" placeholder="Password" value="@Form.Password"/>
+
+        @if (!string.IsNullOrWhiteSpace(Error))
+        {
+            <div>@Error</div>
+        }
+
+        <button hx-post="/login" hx-target="@Anonymous.GetRouterId()">Login</button>
+        <a href="/register">Register</a>
+        <a href="/forgot-password">Forgot Password</a>
+        <input type="hidden" name="ReturnUrl" value="@ReturnUrl"/>
+    </form>
+</HtmxPage>
+
+@code {
+    [Parameter] public LoginRequest Form { get; set; }
+    [Parameter] public StringValues? ReturnUrl { get; set; }
+    [Parameter] public string? Error { get; set; }
+    protected override void OnInitialized()
+    {
+        Form = new LoginRequest
+        {
+            Email = string.Empty,
+            Password = string.Empty
+        };
+        base.OnInitialized();
+    }
+
+}
