@@ -1,56 +1,29 @@
 namespace Razmx.Core;
 
-public class HtmxRouter : IComponent
+public abstract class HtmxRouter : HtmxComponent
 {
-    private RenderHandle _renderHandle;
+    private string _identifier = default!;
+    public string HtmlTag { get; internal set; } = "div";
 
-    [Parameter]
-    public RenderFragment ChildContent { get; set; } = default!;
+    [Parameter] public RenderFragment ChildContent { get; set; } = default!;
+    [Parameter] public string? CssClass { get; set; }
 
-    [Parameter]
-    public string? CssClass { get; set; }
-
-    [Parameter]
-    public string RouterId { get; set; } = "main-router";
-
-    public void Attach(RenderHandle renderHandle)
+    protected void SetIdentifier(string identifier)
     {
-        _renderHandle = renderHandle;
+        _identifier = identifier;
     }
 
-    public Task SetParametersAsync(ParameterView parameters)
-    {
-        parameters.SetParameterProperties(this);
-        Render();
-        return Task.CompletedTask;
-    }
-
-    private void Render()
+    protected override RenderFragment GenerateFragmentToRender()
     {
         RenderFragment fragment = builder =>
         {
-            builder.OpenElement(0, "main");
-            builder.AddAttribute(2, "id", RouterId);
+            builder.OpenElement(0, HtmlTag);
+            builder.AddAttribute(2, "id", _identifier);
             builder.AddAttribute(3, "class", CssClass);
             builder.AddContent(4, ChildContent);
             builder.CloseElement();
         };
 
-        _renderHandle.Render(fragment);
+        return fragment;
     }
-
-    private static RenderFragment WrapInLayout(Type layoutType, RenderFragment bodyParam)
-    {
-        void Render(RenderTreeBuilder builder)
-        {
-            builder.OpenComponent(0, layoutType);
-            builder.AddComponentParameter(1, nameof(LayoutComponentBase.Body), bodyParam);
-            builder.CloseComponent();
-        }
-
-        return Render;
-    }
-
-    private static Type? GetParentLayoutType(Type type)
-        => type.GetCustomAttribute<LayoutAttribute>()?.LayoutType;
 }

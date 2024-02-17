@@ -1,5 +1,5 @@
 @inherits LayoutComponentBase
-@namespace Razmx.App
+@namespace Razmx.App.Pages
 
 <!DOCTYPE html>
 <html lang="en">
@@ -14,19 +14,10 @@
     <script src="/js/htmx.min.js"></script>
 </head>
 
-<body hx-boost="true">
-<HtmxRouter RouterId="@MainRouterId" CssClass="bg-white bg-gray-100 flex flex-col">
+<body hx-boost="true" hx-history="false">
+<AppBar/>
+<HtmxMainRouter>
     @Body
-</HtmxRouter>
+</HtmxMainRouter>
 </body>
 </html>
-
-@code{
-    private static string MainRouterId = "main-router";
-
-    public static string GetRouterId(string? routerId = null)
-    {
-        return $"#{routerId ?? MainRouterId}";
-    }
-
-}

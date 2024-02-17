@@ -1,35 +1,33 @@
 @page "/register"
+@attribute [RedirectToUrlIfAuthenticated("/")]
 
-<HtmxPage Layout="@typeof(Anonymous)" Title="Register">
-    <h3>Register</h3>
-    <form action="/register" method="post">
+<HtmxAppPage PageName="Register" SensitiveData="true">
+    <h1>Register</h1>
+    <HtmxForm State="State">
         <AntiforgeryToken/>
-        <input type="text" name="Email" placeholder="Email" value="@Form.Email"/>
-        <input type="password" name="Password" placeholder="Password" value="@Form.Password"/>
-        @if (!string.IsNullOrWhiteSpace(Error))
-        {
-            <div>@Error</div>
-        }
 
-        <button hx-post="/register" hx-target="@Anonymous.GetRouterId()">Register</button>
-        <a href="/login">Login</a>
-        <input type="hidden" name="ReturnUrl" value=""/>
-    </form>
-</HtmxPage>
+        <HtmxInput Name="@nameof(Email)" type="text" value="@Email"/>
+        <HtmxInput Name="@nameof(Password)" type="password" value="@Password"/>
+
+        <HtmxValidationErrors />
+
+        <button type="submit">Register</button>
+        <HtmxLink Route="/login">Login</HtmxLink>
+        <input type="hidden" Value="@ReturnUrl"/>
+    </HtmxForm>
+</HtmxAppPage>
 
 @code {
-    [Parameter] public RegisterRequest Form { get; set; }
-    [Parameter] public string? Error { get; set; }
-
-    protected override void OnInitialized()
+    [Parameter]
+    public ModelState<RegisterRequest> State { get; set; } = ModelState.Init(new RegisterRequest
     {
-        Form = new RegisterRequest
-        {
-            Email = string.Empty,
-            Password = string.Empty
-        };
+        Email = string.Empty,
+        Password = string.Empty
+    });
 
-        base.OnInitialized();
-    }
+    private string Email => State.Model.Email;
+    private string Password => State.Model.Password;
 
+    [Parameter] public IDictionary<string, string>? Errors { get; set; }
+    [Parameter] public StringValues? ReturnUrl { get; set; }
 }

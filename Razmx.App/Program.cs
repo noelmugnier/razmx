@@ -1,18 +1,21 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Razmx.App.Components;
+using Razmx.App.Models;
+using Razmx.App.Pages;
 using Razmx.App.Pages.Auth;
 using Razmx.App.Pages.Forecast;
 using Tailwind;
 
 var builder = WebApplication.CreateBuilder(args);
-
-builder.Services.AddRazorComponents();
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
@@ -22,15 +25,19 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.LogoutPath = "/logout";
     });
 
-builder.Services.AddAuthorization(options =>
-{
-});
+builder.Services.AddAuthorization(options => { });
 
 builder.Services.AddAntiforgery();
-
-builder.Services.AddSqlite<AppDbContext>(builder.Configuration.GetConnectionString("AppDbContext"));
-
+builder.Services.AddRazorComponents();
 builder.Services.AddHttpContextAccessor();
+
+builder.Services.AddScoped<AuthenticationStateProvider, ServerAuthenticationStateProvider>();
+builder.Services.AddSqlite<AppDbContext>(builder.Configuration.GetConnectionString("AppDbContext"), options => { },
+    build =>
+    {
+        build.EnableSensitiveDataLogging();
+        build.EnableDetailedErrors();
+    });
 
 var app = builder.Build();
 
@@ -53,74 +60,114 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapGroup("")
-    .MapHtmxRoutes(typeof(Main))
-    .WithRootComponent<ListForecasts>();
+    .MapHtmxPages(typeof(MainLayout))
+    .MapNotFoundPage<Fallback>();
+
+app.MapGet("/api/forecasts",
+    () => new RazorComponentResult<Forecasts>(new Dictionary<string, object?>()
+        { { "Value", ForecastsService.GetNextForecasts() } }));
 
 app.MapPost("/api/forecasts",
-    (HttpContext context) => HtmxResults.Location<ForecastDetails>(context, new { Id = Guid.NewGuid().ToString() }));
+    (HttpContext context) =>
+        HtmxResults.RedirectToCreated<ForecastDetails>(context, new { Id = Guid.NewGuid().ToString() }));
 
 app.MapPut("/api/forecasts/{id}",
-    (HttpContext context, string id) => HtmxResults.Redirect<ForecastDetails>(context, new { Id = id }));
+    (HttpContext context, string id) => HtmxResults.FullPageRedirect<ForecastDetails>(context, new { Id = id }));
 
-app.MapPost("/register", async ([FromForm] RegisterRequest request, [FromServices] AppDbContext dbContext, HttpContext httpContext, CancellationToken token) =>
-{
-    var user = await dbContext.Users.FirstOrDefaultAsync(a => a.UserName== request.Email, token);
-    if (user != null)
+app.MapPost("/register",
+    async ([FromForm] RegisterRequest request, [FromServices] AppDbContext dbContext, HttpContext httpContext,
+        CancellationToken token, [FromQuery] string? returnUrl = null) =>
     {
-        return new RazorComponentResult<Register>(new { Form = request, Error = "Email already in use" });
-    }
+        var user = await dbContext.Users.FirstOrDefaultAsync(a => a.UserName == request.Email, token);
+        if (user != null)
+        {
+            var state = ModelState.Init(request);
+            state.Errors.Add("Email", "Email already in use");
+            state.Errors.Add("Password", "Invalid password");
 
-    user = new IdentityUser(request.Email)
+            return new RazorComponentResult<Register>(new Dictionary<string, object?>(){{"State", state}});
+        }
+
+        user = new IdentityUser(request.Email)
+        {
+            Id = Guid.NewGuid().ToString(),
+            Email = request.Email,
+            PasswordHash = request.Password
+        };
+
+        await dbContext.AddAsync(user, token);
+        await dbContext.SaveChangesAsync(token);
+        await SignInUser(httpContext, user);
+
+        if (!string.IsNullOrWhiteSpace(returnUrl))
+        {
+            return HtmxResults.RedirectToUrl(httpContext, returnUrl);
+        }
+
+        return HtmxResults.Redirect<Home>(httpContext);
+    });
+
+app.MapPost("/login",
+    async ([FromForm] LoginRequest request, [FromServices] AppDbContext dbContext, HttpContext httpContext,
+        CancellationToken token, [FromQuery] string? returnUrl = null) =>
     {
-        Id = Guid.NewGuid().ToString(),
-        Email = request.Email,
-        PasswordHash = request.Password
-    };
+        var user = await dbContext.Users.FirstOrDefaultAsync(
+            a => a.UserName == request.Email && a.PasswordHash == request.Password, token);
+        if (user == null)
+        {
+            var state = ModelState.Init(request);
+            state.Errors.Add("_", "Invalid username or password");
+            state.Errors.Add("Email", "Invalid username");
+            state.Errors.Add("Password", "Invalid password");
 
-    await dbContext.AddAsync(user, token);
-    await dbContext.SaveChangesAsync(token);
+            return new RazorComponentResult<Login>(new Dictionary<string, object?>(){{"State", state}});
+        }
 
-    await SignInUser(user, httpContext);
-    return HtmxResults.Redirect<ListForecasts>(httpContext);
-});
+        await SignInUser(httpContext, user);
 
-app.MapPost("/login", async ([FromForm] LoginRequest request, [FromServices] AppDbContext dbContext, HttpContext httpContext, CancellationToken token) =>
-{
-    var user = await dbContext.Users.FirstOrDefaultAsync(a => a.UserName== request.Email && a.PasswordHash == request.Password, token);
-    if (user == null)
-    {
-        return new RazorComponentResult<Login>(new { Form = request, Error = "Invalid username or password" });
-    }
+        if (!string.IsNullOrWhiteSpace(returnUrl))
+        {
+            return HtmxResults.RedirectToUrl(httpContext, returnUrl);
+        }
 
-    await SignInUser(user, httpContext);
-    return HtmxResults.Redirect<ListForecasts>(httpContext);
-});
+        return HtmxResults.Redirect<Home>(httpContext);
+    });
 
 app.MapPost("/logout", async (HttpContext httpContext) =>
 {
     await httpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-    return HtmxResults.Redirect<Login>(httpContext);
+    return HtmxResults.FullPageRedirect<Home>(httpContext);
 });
 
 await app.RunAsync();
+return;
 
-async Task SignInUser(IdentityUser identityUser, HttpContext httpContext1)
+async Task SignInUser(HttpContext httpContext, IdentityUser identityUser)
 {
     var claims = new List<Claim>
     {
-        new (ClaimTypes.Name, identityUser.UserName),
-        new (ClaimTypes.NameIdentifier, identityUser.Id),
-        new (ClaimTypes.Email, identityUser.Email)
+        new(ClaimTypes.Name, identityUser.UserName),
+        new(ClaimTypes.NameIdentifier, identityUser.Id),
+        new(ClaimTypes.Email, identityUser.Email)
     };
     var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-    await httpContext1.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(identity));
+    await httpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(identity));
 }
 
-public class AppDbContext : DbContext
+public static class ForecastsService
 {
-    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
+    private static string[] summaries = new[]
     {
-    }
+        "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
+    };
 
-    public DbSet<IdentityUser> Users { get; set; }
+    public static IEnumerable<WeatherForecast> GetNextForecasts() => Enumerable.Range(1, 5).Select(index =>
+            new WeatherForecast
+            (
+                DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
+                Random.Shared.Next(-20, 55),
+                summaries[Random.Shared.Next(summaries.Length)],
+                Guid.NewGuid().ToString()
+            ))
+        .ToArray();
 }

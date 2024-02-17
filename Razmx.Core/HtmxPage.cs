@@ -3,65 +3,57 @@ using Microsoft.AspNetCore.Components.Web;
 namespace Razmx.Core;
 
 //code adapted from LayoutView component
-public class HtmxPage : IComponent
+public class HtmxPage : HtmxComponent
 {
-    [Inject]
-    private IHttpContextAccessor HttpContextAccessor { get; set; } = default!;
+    [Inject] private IHttpContextAccessor HttpContextAccessor { get; set; } = default!;
 
-    private RenderHandle _renderHandle;
+    [Parameter] public RenderFragment ChildContent { get; set; } = default!;
+    [Parameter] public Type Layout { get; set; } = default!;
+    [Parameter] public string PageName { get; set; } = default!;
+    [Parameter] public bool SensitiveData { get; set; }
 
-    [Parameter]
-    public RenderFragment ChildContent { get; set; } = default!;
-
-    [Parameter]
-    public Type Layout { get; set; } = default!;
-
-    [Parameter]
-    public string Title { get; set; } = default!;
-
-    public void Attach(RenderHandle renderHandle)
-    {
-        _renderHandle = renderHandle;
-    }
-
-    public Task SetParametersAsync(ParameterView parameters)
-    {
-        parameters.SetParameterProperties(this);
-        Render();
-        return Task.CompletedTask;
-    }
-
-    private void Render()
+    protected override RenderFragment GenerateFragmentToRender()
     {
         var customFragment = ChildContent;
         var isHtmxRequest = HttpContextAccessor.HttpContext?.Request.IsHtmxRequest() ?? false;
-        if (isHtmxRequest)
+        var isBackHistoryRequest = HttpContextAccessor.HttpContext?.Request.IsHtmxBackHistoryRequest() ?? false;
+        if (isHtmxRequest && !isBackHistoryRequest)
         {
             customFragment = builder =>
             {
                 builder.OpenElement(0, "title");
                 builder.AddAttribute(1, "hx-swap-oob", "true");
-                builder.AddContent(2, Title);
+                builder.AddContent(2, PageName);
                 builder.CloseElement();
-                builder.AddContent(3, ChildContent);
+                if (SensitiveData)
+                {
+                    builder.OpenElement(3, "span");
+                    builder.AddAttribute(4, "hx-history", "false");
+                    builder.CloseElement();
+                }
+                builder.AddContent(5, ChildContent);
             };
 
             HttpContextAccessor.HttpContext?.Response.Headers.TryAdd("Vary", "HX-Request");
-            _renderHandle.Render(customFragment);
-            return;
+            return customFragment;
         }
 
         customFragment = builder =>
         {
-            // builder.OpenComponent(0, typeof(PageTitle));
-            // builder.AddAttribute(1, "ChildContent", (RenderFragment)(
-            //     (pageTitleBuilder) =>
-            //     {
-            //         pageTitleBuilder.AddContent(2, Title);
-            //     }));
-            //
-            // builder.CloseComponent();
-            builder.AddContent(3, ChildContent);
+            builder.OpenComponent(0, typeof(PageTitle));
+            builder.AddAttribute(1, "ChildContent", (RenderFragment)(
+                (pageTitleBuilder) => { pageTitleBuilder.AddContent(2, PageName); }));
+
+            builder.CloseComponent();
+
+            if (SensitiveData)
+            {
+                builder.OpenElement(3, "span");
+                builder.AddAttribute(4, "hx-history", "false");
+                builder.CloseElement();
+            }
+
+            builder.AddContent(5, ChildContent);
         };
 
         var layoutType = Layout;
@@ -71,7 +63,7 @@ public class HtmxPage : IComponent
             layoutType = GetParentLayoutType(layoutType);
         }
 
-        _renderHandle.Render(customFragment);
+        return customFragment;
     }
 
     private static RenderFragment WrapInLayout(Type layoutType, RenderFragment bodyParam)

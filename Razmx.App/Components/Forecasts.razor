@@ -1,12 +1,9 @@
-<h1>Weather forecasts</h1>
-
 @foreach (var forecast in Value)
 {
     <Forecast Value="@forecast"/>
 }
 
-@code {
-
-    [Parameter]
-    public IEnumerable<WeatherForecast> Value { get; set; }
+@code
+{
+    [Parameter] public IEnumerable<WeatherForecast> Value { get; set; }
 }

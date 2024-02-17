@@ -1,0 +1,19 @@
+@page "/not-found"
+@namespace Razmx.App.Pages
+
+<HtmxAppPage title="Not found">
+    <h4>Page not found</h4>
+
+    @if (!string.IsNullOrEmpty(Error))
+    {
+        <div class="alert alert-danger" role="alert">
+            @Error
+        </div>
+    }
+
+</HtmxAppPage>
+
+@code {
+    [Parameter] public string? Error { get; set; }
+    [Parameter] public string? Path { get; set; }
+}

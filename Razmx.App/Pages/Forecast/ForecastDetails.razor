@@ -1,8 +1,12 @@
 @page "/forecasts/{Id}"
+@attribute [Authorize]
 
-<HtmxPage Layout="@typeof(Main)" Title="@_value.Summary">
+<HtmxAppPage PageName="@_value.Summary">
+    <h1>Forecast details</h1>
+    <HtmxLink Route="/forecasts">Go to forecasts</HtmxLink>
+
     <Forecast Value="_value"/>
-</HtmxPage>
+</HtmxAppPage>
 
 @code
 {

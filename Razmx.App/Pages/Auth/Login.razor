@@ -1,36 +1,32 @@
 @page "/login"
+@attribute [RedirectToUrlIfAuthenticated("/")]
 
-<HtmxPage Layout="@typeof(Anonymous)" Title="Login">
-    <h3>Login</h3>
-    <form action="/login" method="post">
+<HtmxAppPage PageName="Login" SensitiveData="true">
+    <h1>Login</h1>
+    <HtmxForm State="State">
         <AntiforgeryToken/>
-        <input type="text" name="Email" placeholder="Email" value="@Form.Email"/>
-        <input type="password" name="Password" placeholder="Password" value="@Form.Password"/>
 
-        @if (!string.IsNullOrWhiteSpace(Error))
-        {
-            <div>@Error</div>
-        }
+        <HtmxInput Name="@nameof(Email)" type="text" value="@Email"/>
+        <HtmxInput Name="@nameof(Password)" type="password" value="@Password"/>
 
-        <button hx-post="/login" hx-target="@Anonymous.GetRouterId()">Login</button>
-        <a href="/register">Register</a>
-        <a href="/forgot-password">Forgot Password</a>
-        <input type="hidden" name="ReturnUrl" value="@ReturnUrl"/>
-    </form>
-</HtmxPage>
+        <HtmxValidationErrors />
+
+        <button type="submit">Login</button>
+        <HtmxLink Route="/register">Register</HtmxLink>
+        <input type="hidden" Value="@ReturnUrl"/>
+    </HtmxForm>
+</HtmxAppPage>
 
 @code {
-    [Parameter] public LoginRequest Form { get; set; }
-    [Parameter] public StringValues? ReturnUrl { get; set; }
-    [Parameter] public string? Error { get; set; }
-    protected override void OnInitialized()
+    [Parameter]
+    public ModelState<LoginRequest> State { get; set; } = ModelState.Init(new LoginRequest
     {
-        Form = new LoginRequest
-        {
-            Email = string.Empty,
-            Password = string.Empty
-        };
-        base.OnInitialized();
-    }
+        Email = string.Empty,
+        Password = string.Empty
+    });
 
+    private string Email => State.Model.Email;
+    private string Password => State.Model.Password;
+
+    [Parameter] public StringValues? ReturnUrl { get; set; }
 }

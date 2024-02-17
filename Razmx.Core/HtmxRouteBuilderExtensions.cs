@@ -2,7 +2,7 @@ namespace Razmx.Core;
 
 public static class HtmxRouteBuilderExtensions
 {
-    public static IEndpointRouteBuilder MapHtmxRoutes(this IEndpointRouteBuilder endpoints, Type assemblyType, params Type[] typesFromAssemblies)
+    public static IEndpointRouteBuilder MapHtmxPages(this IEndpointRouteBuilder endpoints, Type assemblyType, params Type[] typesFromAssemblies)
     {
         var types = new List<Type> { assemblyType }.Concat(typesFromAssemblies);
         foreach(var type in types)
@@ -26,7 +26,7 @@ public static class HtmxRouteBuilderExtensions
         return endpoints;
     }
 
-    public static IEndpointRouteBuilder WithRootComponent<TComponent>(this IEndpointRouteBuilder endpoints, string defaultRouteTemplate = "/", string defaultRouteName = "Home") where TComponent : IComponent
+    public static IEndpointRouteBuilder MapDefaultPage<TComponent>(this IEndpointRouteBuilder endpoints, string defaultRouteTemplate = "/", string defaultRouteName = "Home") where TComponent : IComponent
     {
         var htmxComponent = typeof(TComponent);
         RegisterEndpoint(endpoints, htmxComponent, defaultRouteTemplate, defaultRouteName);
@@ -34,22 +34,42 @@ public static class HtmxRouteBuilderExtensions
         return endpoints;
     }
 
+    public static IEndpointRouteBuilder MapNotFoundPage<TComponent>(this IEndpointRouteBuilder endpoints) where TComponent : IComponent
+    {
+        var htmxComponent = typeof(TComponent);
+        var endpoint = endpoints.MapFallback((HttpContext context) =>
+        {
+            var parameters = ExtractComponentParameters(context);
+            return new RazorComponentResult(htmxComponent, parameters);
+        }).WithName("NotFound");
+
+        var authorizeAttributes = htmxComponent.GetCustomAttributes(typeof(AuthorizeAttribute), true);
+        if (authorizeAttributes.Any())
+        {
+            endpoint.RequireAuthorization();
+        }
+
+        return endpoints;
+    }
+
     private static void RegisterEndpoint(IEndpointRouteBuilder endpoints, Type htmxComponent, string routeTemplate,
         string routeName)
     {
+        var redirectToRouteIfAuthenticated = htmxComponent.GetCustomAttribute<RedirectToRouteIfAuthenticatedAttribute>();
+        var redirectToUrlIfAuthenticated = htmxComponent.GetCustomAttribute<RedirectToUrlIfAuthenticatedAttribute>();
         var endpoint = endpoints.MapGet(routeTemplate, (HttpContext context) =>
         {
-            var parameters = new Dictionary<string, object?>();
-            foreach (var key in context.Request.Query.Keys)
+            var isAuthenticated = context.User.Identity?.IsAuthenticated ?? false;
+            if (isAuthenticated && redirectToRouteIfAuthenticated != null)
             {
-                parameters.Add(key, context.Request.Query[key]);
+                return HtmxResults.RedirectToRoute(context, redirectToRouteIfAuthenticated.RedirectTo);
+            }
+            if (isAuthenticated && redirectToUrlIfAuthenticated != null)
+            {
+                return HtmxResults.RedirectToUrl(context, redirectToUrlIfAuthenticated.RedirectTo);
             }
 
-            foreach (var key in context.Request.RouteValues.Keys)
-            {
-                parameters.Add(key, context.Request.RouteValues[key]);
-            }
-
+            var parameters = ExtractComponentParameters(context);
             return new RazorComponentResult(htmxComponent, parameters);
         }).WithName(routeName);
 
@@ -60,5 +80,21 @@ public static class HtmxRouteBuilderExtensions
         }
 
         var anonymousAttributes = htmxComponent.GetCustomAttributes(typeof(AllowAnonymousAttribute), true);
+    }
+
+    private static Dictionary<string, object?> ExtractComponentParameters(HttpContext context)
+    {
+        var parameters = new Dictionary<string, object?>();
+        foreach (var key in context.Request.Query.Keys)
+        {
+            parameters.Add(key, context.Request.Query[key]);
+        }
+
+        foreach (var key in context.Request.RouteValues.Keys)
+        {
+            parameters.Add(key, context.Request.RouteValues[key]);
+        }
+
+        return parameters;
     }
 }
