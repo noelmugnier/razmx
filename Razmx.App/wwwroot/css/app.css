@@ -1,5 +1,6 @@
 @tailwind base;
 @tailwind components;
+@tailwind utilities;
 
 input.is-invalid {
     @apply border-red-500 text-red-900 placeholder-red-500
@@ -13,5 +14,3 @@ input + span.error-message {
 details.errors-summary li {
     @apply text-red-900;
 }
-
-@tailwind utilities;

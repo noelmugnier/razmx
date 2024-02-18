@@ -1,5 +1,5 @@
 @page "/login"
-@attribute [RedirectToUrlIfAuthenticated("/")]
+@attribute [RedirectToPageIfAuthenticated<Home>]
 
 <HtmxAppPage PageName="Login">
     <h1>Login</h1>

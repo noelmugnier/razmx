@@ -544,6 +544,22 @@ video {
   --tw-backdrop-sepia:  ;
 }
 
+.static {
+  position: static;
+}
+
+.mb-2 {
+  margin-bottom: 0.5rem;
+}
+
+.table {
+  display: table;
+}
+
+.hidden {
+  display: none;
+}
+
 input.is-invalid {
   border-width: 2px;
   --tw-border-opacity: 1;
@@ -570,20 +586,4 @@ input + span.error-message {
 details.errors-summary li {
   --tw-text-opacity: 1;
   color: rgb(127 29 29 / var(--tw-text-opacity));
-}
-
-.static {
-  position: static;
-}
-
-.mb-2 {
-  margin-bottom: 0.5rem;
-}
-
-.table {
-  display: table;
-}
-
-.hidden {
-  display: none;
 }

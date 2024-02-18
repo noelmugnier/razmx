@@ -1,8 +1,8 @@
 namespace Razmx.Core;
 
-public class RedirectToUrlIfAuthenticatedAttribute : Attribute
+public class RedirectToIfAuthenticatedAttribute : Attribute
 {
-    public RedirectToUrlIfAuthenticatedAttribute(string redirectTo)
+    public RedirectToIfAuthenticatedAttribute(string redirectTo)
     {
         RedirectTo = redirectTo;
     }

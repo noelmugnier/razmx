@@ -55,18 +55,19 @@ public static class HtmxRouteBuilderExtensions
     private static void RegisterEndpoint(IEndpointRouteBuilder endpoints, Type htmxComponent, string routeTemplate,
         string routeName)
     {
-        var redirectToRouteIfAuthenticated = htmxComponent.GetCustomAttribute<RedirectToRouteIfAuthenticatedAttribute>();
-        var redirectToUrlIfAuthenticated = htmxComponent.GetCustomAttribute<RedirectToUrlIfAuthenticatedAttribute>();
+        var redirectToPageIfAuthenticated = htmxComponent.GetCustomAttribute(typeof(RedirectToPageIfAuthenticatedAttribute<>));
+        var redirectToIfAuthenticated = htmxComponent.GetCustomAttribute<RedirectToIfAuthenticatedAttribute>();
         var endpoint = endpoints.MapGet(routeTemplate, (HttpContext context) =>
         {
             var isAuthenticated = context.User.Identity?.IsAuthenticated ?? false;
-            if (isAuthenticated && redirectToRouteIfAuthenticated != null)
+            if (isAuthenticated && redirectToPageIfAuthenticated != null)
             {
-                return HtmxResults.RedirectToRoute(context, redirectToRouteIfAuthenticated.RedirectTo);
+                return HtmxResults.RedirectToRoute(context, ((RedirectToIfAuthenticatedAttribute)redirectToPageIfAuthenticated).RedirectTo);
             }
-            if (isAuthenticated && redirectToUrlIfAuthenticated != null)
+
+            if (isAuthenticated && redirectToIfAuthenticated != null)
             {
-                return HtmxResults.RedirectToUrl(context, redirectToUrlIfAuthenticated.RedirectTo);
+                return HtmxResults.RedirectToUrl(context, redirectToIfAuthenticated.RedirectTo);
             }
 
             var parameters = ExtractComponentParameters(context);
