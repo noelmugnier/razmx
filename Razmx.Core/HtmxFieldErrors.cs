@@ -2,7 +2,7 @@ using System.Dynamic;
 
 namespace Razmx.Core;
 
-public class HtmxInputErrors : HtmxComponent
+public class HtmxFieldErrors : HtmxComponent
 {
     [CascadingParameter] private ModelState State { get; set; }
     [Parameter] public string For { get; set; } = default!;
@@ -12,8 +12,13 @@ public class HtmxInputErrors : HtmxComponent
         if (State == null)
         {
             throw new InvalidOperationException($"{nameof(State)} requires a cascading " +
-                                                $"parameter of type {nameof(ModelState)}. For example, you can use {nameof(HtmxInputErrors)} " +
+                                                $"parameter of type {nameof(ModelState)}. For example, you can use {nameof(HtmxFieldErrors)} " +
                                                 $"inside an HtmxForm.");
+        }
+
+        if (string.IsNullOrWhiteSpace(For))
+        {
+            throw new InvalidOperationException($"{nameof(For)} attribute is required on {nameof(HtmxFieldErrors)}");
         }
 
         base.OnInitialized();
@@ -24,15 +29,16 @@ public class HtmxInputErrors : HtmxComponent
         RenderFragment fragment = builder =>
         {
             var inputErrors = State.Errors.Where(error => error.Key == For).Select(error => error.Value).ToList();
-            if (inputErrors.Count > 0)
+            if (inputErrors.Count <= 0)
             {
-                builder.OpenElement(0, "div");
-                foreach (var error in inputErrors)
-                {
-                    builder.OpenElement(2, "span");
-                    builder.AddContent(3, error);
-                    builder.CloseElement();
-                }
+                return;
+            }
+
+            foreach (var error in inputErrors)
+            {
+                builder.OpenElement(2, "span");
+                builder.AddAttribute(3, "class", "error-message");
+                builder.AddContent(3, error);
                 builder.CloseElement();
             }
         };
@@ -43,7 +49,7 @@ public class HtmxInputErrors : HtmxComponent
 
 public static class ObjectExtensions
 {
-    public static ExpandoObject ToExpando<T>(this T? obj)
+    public static IDictionary<string, object?> ToExpando<T>(this T? obj)
     {
         if (obj is null)
             return new ExpandoObject();
@@ -59,10 +65,5 @@ public static class ObjectExtensions
         }
 
         return expando;
-    }
-
-    public static IDictionary<string, object?> ToDictionary(this object? obj)
-    {
-        return obj as IDictionary<string, object?> ?? new Dictionary<string, object?>();
     }
 }

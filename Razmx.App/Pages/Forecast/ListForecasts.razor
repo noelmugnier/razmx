@@ -6,23 +6,17 @@
 
     <p>Learn about <a href="https://learn.microsoft.com/aspnet/core" target="_blank">building Web apps with ASP.NET Core</a>.</p>
 
-    <HtmxGet Url="/api/forecasts" HxTarget="#forecasts">Refresh</HtmxGet>
+    <HtmxGet Url="/api/forecasts" hx-target="#forecasts">Refresh</HtmxGet>
 
     <div id="forecasts">
         <Forecasts Value="_forecasts"/>
     </div>
 
-    <HtmxPost Url="/api/forecasts" HxHeaders="_headers">Create</HtmxPost>
+    <HtmxPost Url="/api/forecasts" HxRetarget="@HtmxMainRouter.Id">Create</HtmxPost>
     <HtmxPut Url="/api/forecasts/1234">Update</HtmxPut>
 </HtmxAppPage>
 
 @code{
-
-    private IDictionary<string, object> _headers = new Dictionary<string, object>
-    {
-        { "hx-retarget", HtmxMainRouter.Id }
-    };
-
     private IEnumerable<WeatherForecast> _forecasts;
 
     protected override void OnInitialized()

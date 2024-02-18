@@ -1,3 +1,17 @@
 @tailwind base;
 @tailwind components;
+
+input.is-invalid {
+    @apply border-red-500 text-red-900 placeholder-red-500
+    border-2;
+}
+
+input + span.error-message {
+    @apply text-red-900;
+}
+
+details.errors-summary li {
+    @apply text-red-900;
+}
+
 @tailwind utilities;

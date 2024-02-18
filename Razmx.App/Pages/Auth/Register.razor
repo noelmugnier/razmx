@@ -1,19 +1,18 @@
 @page "/register"
 @attribute [RedirectToUrlIfAuthenticated("/")]
 
-<HtmxAppPage PageName="Register" SensitiveData="true">
+<HtmxAppPage PageName="Register">
     <h1>Register</h1>
     <HtmxForm State="State">
-        <AntiforgeryToken/>
+        <input type="hidden" Value="@ReturnUrl"/>
 
-        <HtmxInput Name="@nameof(Email)" type="text" value="@Email"/>
-        <HtmxInput Name="@nameof(Password)" type="password" value="@Password"/>
+        <Input type="text" Name="@nameof(Email)" value="@Email" placeholder="email" required/>
+        <Input type="password" Name="@nameof(Password)" value="@Password" placeholder="password" required/>
 
-        <HtmxValidationErrors />
+        <FormErrors/>
 
         <button type="submit">Register</button>
         <HtmxLink Route="/login">Login</HtmxLink>
-        <input type="hidden" Value="@ReturnUrl"/>
     </HtmxForm>
 </HtmxAppPage>
 

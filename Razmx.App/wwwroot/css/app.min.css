@@ -544,8 +544,44 @@ video {
   --tw-backdrop-sepia:  ;
 }
 
+input.is-invalid {
+  border-width: 2px;
+  --tw-border-opacity: 1;
+  border-color: rgb(239 68 68 / var(--tw-border-opacity));
+  --tw-text-opacity: 1;
+  color: rgb(127 29 29 / var(--tw-text-opacity));
+}
+
+input.is-invalid::-moz-placeholder {
+  --tw-placeholder-opacity: 1;
+  color: rgb(239 68 68 / var(--tw-placeholder-opacity));
+}
+
+input.is-invalid::placeholder {
+  --tw-placeholder-opacity: 1;
+  color: rgb(239 68 68 / var(--tw-placeholder-opacity));
+}
+
+input + span.error-message {
+  --tw-text-opacity: 1;
+  color: rgb(127 29 29 / var(--tw-text-opacity));
+}
+
+details.errors-summary li {
+  --tw-text-opacity: 1;
+  color: rgb(127 29 29 / var(--tw-text-opacity));
+}
+
+.static {
+  position: static;
+}
+
 .mb-2 {
   margin-bottom: 0.5rem;
+}
+
+.table {
+  display: table;
 }
 
 .hidden {

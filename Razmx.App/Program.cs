@@ -104,7 +104,7 @@ app.MapPost("/register",
             return HtmxResults.RedirectToUrl(httpContext, returnUrl);
         }
 
-        return HtmxResults.Redirect<Home>(httpContext);
+        return HtmxResults.FullPageRedirect<Home>(httpContext);
     });
 
 app.MapPost("/login",
@@ -130,7 +130,7 @@ app.MapPost("/login",
             return HtmxResults.RedirectToUrl(httpContext, returnUrl);
         }
 
-        return HtmxResults.Redirect<Home>(httpContext);
+        return HtmxResults.FullPageRedirect<Home>(httpContext);
     });
 
 app.MapPost("/logout", async (HttpContext httpContext) =>
@@ -150,6 +150,7 @@ async Task SignInUser(HttpContext httpContext, IdentityUser identityUser)
         new(ClaimTypes.NameIdentifier, identityUser.Id),
         new(ClaimTypes.Email, identityUser.Email)
     };
+
     var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
     await httpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(identity));
 }

@@ -8,16 +8,16 @@
             <HtmxLink Route="/forecasts">Forecasts</HtmxLink>
         </h3>
     }
+
     <h3>
         <HtmxLink Route="/privacy">Privacy</HtmxLink>
     </h3>
+
     @if (IsAuthenticated)
     {
         <h3>
             Hello @Username !
-            <form action="/logout" method="post">
-                <button type="submit" hx-post="/logout">Logout</button>
-            </form>
+            <HtmxPost Url="/logout">Logout</HtmxPost>
         </h3>
     }
     else

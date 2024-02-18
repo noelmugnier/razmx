@@ -1,15 +1,14 @@
 @page "/login"
 @attribute [RedirectToUrlIfAuthenticated("/")]
 
-<HtmxAppPage PageName="Login" SensitiveData="true">
+<HtmxAppPage PageName="Login">
     <h1>Login</h1>
     <HtmxForm State="State">
-        <AntiforgeryToken/>
 
-        <HtmxInput Name="@nameof(Email)" type="text" value="@Email"/>
-        <HtmxInput Name="@nameof(Password)" type="password" value="@Password"/>
+        <Input type="text" name="@nameof(Email)" value="@Email" placeholder="email" required/>
+        <Input type="password" name="@nameof(Password)" value="@Password" placeholder="password" required/>
 
-        <HtmxValidationErrors />
+        <FormErrors/>
 
         <button type="submit">Login</button>
         <HtmxLink Route="/register">Register</HtmxLink>
