@@ -1,16 +1,16 @@
 <nav>
     <h3>
-        <HtmxLink Route="/">Home</HtmxLink>
+        <HtmxLink href="/">Home</HtmxLink>
     </h3>
     @if (IsAuthenticated)
     {
         <h3>
-            <HtmxLink Route="/forecasts">Forecasts</HtmxLink>
+            <HtmxLink href="/forecasts">Forecasts</HtmxLink>
         </h3>
     }
 
     <h3>
-        <HtmxLink Route="/privacy">Privacy</HtmxLink>
+        <HtmxLink href="/privacy">Privacy</HtmxLink>
     </h3>
 
     @if (IsAuthenticated)
@@ -23,10 +23,10 @@
     else
     {
         <h3>
-            <HtmxLink Route="/login">Login</HtmxLink>
+            <HtmxLink href="/login">Login</HtmxLink>
         </h3>
         <h3>
-            <HtmxLink Route="/register">Register</HtmxLink>
+            <HtmxLink href="/register">Register</HtmxLink>
         </h3>
     }
 </nav>

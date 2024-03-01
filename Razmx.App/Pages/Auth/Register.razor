@@ -1,31 +1,34 @@
 @page "/register"
-@attribute [RedirectToPageIfAuthenticated<Home>]
+@using Razmx.App.Pages.Home
+@implements IFormState<RegisterRequest>
+@attribute [RedirectIfAuthenticated<Home>]
 
-<HtmxAppPage PageName="Register">
-    <h1>Register</h1>
+<HtmxAppPage>
+    <HtmxPageTitle>@Title</HtmxPageTitle>
+    <h1>@Title</h1>
+
     <HtmxForm State="State">
-        <input type="hidden" Value="@ReturnUrl"/>
+        <Hidden Name="@nameof(ReturnUrl)" value="@ReturnUrl"/>
 
         <Input type="text" Name="@nameof(Email)" value="@Email" placeholder="email" required/>
         <Input type="password" Name="@nameof(Password)" value="@Password" placeholder="password" required/>
+        <Input type="password" Name="@nameof(Confirm)" value="@Confirm" placeholder="confirm password" required/>
 
-        <FormErrors/>
+        <HtmxValidationSummary/>
 
         <button type="submit">Register</button>
-        <HtmxLink Route="/login">Login</HtmxLink>
+        <HtmxLink href="/login">Login</HtmxLink>
     </HtmxForm>
 </HtmxAppPage>
 
 @code {
-    [Parameter]
-    public ModelState<RegisterRequest> State { get; set; } = ModelState.Init(new RegisterRequest
-    {
-        Email = string.Empty,
-        Password = string.Empty
-    });
-
+    private static string Title => "Register";
     private string Email => State.Model.Email;
     private string Password => State.Model.Password;
+    private string Confirm => State.Model.Confirm;
+
+    [Parameter]
+    public ModelState<RegisterRequest> State { get; set; } = ModelState.Init(new RegisterRequest());
 
     [Parameter] public IDictionary<string, string>? Errors { get; set; }
     [Parameter] public StringValues? ReturnUrl { get; set; }

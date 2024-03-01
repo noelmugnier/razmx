@@ -1,31 +1,34 @@
+@using Razmx.App.Pages.Home
 @page "/login"
-@attribute [RedirectToPageIfAuthenticated<Home>]
+@implements IFormState<LoginRequest>
+@attribute [RedirectIfAuthenticated<Home>]
 
-<HtmxAppPage PageName="Login">
-    <h1>Login</h1>
+<HtmxAppPage>
+    <HtmxPageTitle>@Title</HtmxPageTitle>
+    <h1>@Title</h1>
+
     <HtmxForm State="State">
+        <Hidden Name="@nameof(ReturnUrl)" value="@ReturnUrl"/>
 
         <Input type="text" name="@nameof(Email)" value="@Email" placeholder="email" required/>
         <Input type="password" name="@nameof(Password)" value="@Password" placeholder="password" required/>
 
-        <FormErrors/>
+        <HtmxValidationSummary/>
 
         <button type="submit">Login</button>
-        <HtmxLink Route="/register">Register</HtmxLink>
+        <HtmxLink href="/register">Register</HtmxLink>
         <input type="hidden" Value="@ReturnUrl"/>
     </HtmxForm>
 </HtmxAppPage>
 
 @code {
-    [Parameter]
-    public ModelState<LoginRequest> State { get; set; } = ModelState.Init(new LoginRequest
-    {
-        Email = string.Empty,
-        Password = string.Empty
-    });
-
+    private static string Title => "Login";
     private string Email => State.Model.Email;
     private string Password => State.Model.Password;
 
     [Parameter] public StringValues? ReturnUrl { get; set; }
+
+    [Parameter]
+    public ModelState<LoginRequest> State { get; set; } = ModelState.Init(new LoginRequest());
+
 }

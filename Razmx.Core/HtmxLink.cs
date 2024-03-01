@@ -1,24 +1,24 @@
 namespace Razmx.Core;
 
-public class HtmxLink : HtmxComponent
+public class HtmxLink : ComponentBase
 {
-    [Parameter] public string? CssClass { get; set; }
-    [Parameter] public string Route { get; set; }
-    [Parameter] public string HxTarget { get; set; } = HtmxMainRouter.Id;
-    [Parameter] public RenderFragment ChildContent { get; set; } = default!;
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object> AdditionalAttributes { get; set; } = new();
 
-    protected override RenderFragment GenerateFragmentToRender()
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
-        RenderFragment fragment = builder =>
-        {
-            builder.OpenElement(0, "a");
-            builder.AddAttribute(2, "href", Route);
-            builder.AddAttribute(2, "hx-target", HxTarget);
-            builder.AddAttribute(3, "class", CssClass);
-            builder.AddContent(4, ChildContent);
-            builder.CloseElement();
-        };
+        builder.OpenElement(0, "a");
 
-        return fragment;
+        foreach (var attribute in AdditionalAttributes)
+        {
+            builder.AddAttribute(1, attribute.Key, attribute.Value);
+        }
+
+        builder.AddContent(2, ChildContent);
+        builder.CloseElement();
+
+        base.BuildRenderTree(builder);
     }
 }

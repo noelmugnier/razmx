@@ -10,7 +10,7 @@ public static class HttpExtensions
     {
         return request.Headers["Hx-History-Restore-Request"].FirstOrDefault() == "true";
     }
-    public static bool CanRedirectWithHtmx(this HttpRequest request)
+    public static bool RequireHtmxPartialResponse(this HttpRequest request)
     {
         return request.IsHtmxRequest() && !request.IsHtmxBackHistoryRequest();
     }

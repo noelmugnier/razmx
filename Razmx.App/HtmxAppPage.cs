@@ -7,6 +7,5 @@ public class HtmxAppPage : HtmxPage
     public HtmxAppPage()
     {
         Layout = typeof(MainLayout);
-        PageName = "Razmx App";
     }
 }

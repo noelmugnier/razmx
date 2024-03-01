@@ -5,15 +5,12 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Razmx.App.Components;
-using Razmx.App.Models;
-using Razmx.App.Pages;
 using Razmx.App.Pages.Auth;
-using Razmx.App.Pages.Forecast;
+using Razmx.App.Pages.Home;
 using Tailwind;
+using NotFound = Razmx.App.Pages.NotFound;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -59,20 +56,13 @@ app.UseAntiforgery();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapGroup("")
+app
     .MapHtmxPages(typeof(MainLayout))
-    .MapNotFoundPage<Fallback>();
+    .MapNotFoundPage<NotFound>();
 
 app.MapGet("/api/forecasts",
     () => new RazorComponentResult<Forecasts>(new Dictionary<string, object?>()
-        { { "Value", ForecastsService.GetNextForecasts() } }));
-
-app.MapPost("/api/forecasts",
-    (HttpContext context) =>
-        HtmxResults.RedirectToCreated<ForecastDetails>(context, new { Id = Guid.NewGuid().ToString() }));
-
-app.MapPut("/api/forecasts/{id}",
-    (HttpContext context, string id) => HtmxResults.FullPageRedirect<ForecastDetails>(context, new { Id = id }));
+        { { "Model", ForecastsService.GetNextForecasts() } }));
 
 app.MapPost("/register",
     async ([FromForm] RegisterRequest request, [FromServices] AppDbContext dbContext, HttpContext httpContext,
@@ -85,7 +75,7 @@ app.MapPost("/register",
             state.Errors.Add("Email", "Email already in use");
             state.Errors.Add("Password", "Invalid password");
 
-            return new RazorComponentResult<Register>(new Dictionary<string, object?>(){{"State", state}});
+            return new HtmxFormComponentResult<Register, RegisterRequest>(state);
         }
 
         user = new IdentityUser(request.Email)
@@ -99,12 +89,9 @@ app.MapPost("/register",
         await dbContext.SaveChangesAsync(token);
         await SignInUser(httpContext, user);
 
-        if (!string.IsNullOrWhiteSpace(returnUrl))
-        {
-            return HtmxResults.RedirectToUrl(httpContext, returnUrl);
-        }
-
-        return HtmxResults.FullPageRedirect<Home>(httpContext);
+        return !string.IsNullOrWhiteSpace(returnUrl)
+            ? httpContext.NavigateToUrl(returnUrl)
+            : httpContext.RedirectTo<Home>();
     });
 
 app.MapPost("/login",
@@ -120,24 +107,24 @@ app.MapPost("/login",
             state.Errors.Add("Email", "Invalid username");
             state.Errors.Add("Password", "Invalid password");
 
-            return new RazorComponentResult<Login>(new Dictionary<string, object?>(){{"State", state}});
+            return new HtmxFormComponentResult<Login, LoginRequest>(state);
         }
 
         await SignInUser(httpContext, user);
 
-        if (!string.IsNullOrWhiteSpace(returnUrl))
-        {
-            return HtmxResults.RedirectToUrl(httpContext, returnUrl);
-        }
-
-        return HtmxResults.FullPageRedirect<Home>(httpContext);
+        return !string.IsNullOrWhiteSpace(returnUrl)
+            ? httpContext.NavigateToUrl(returnUrl)
+            : httpContext.RedirectTo<Home>();
     });
 
 app.MapPost("/logout", async (HttpContext httpContext) =>
 {
     await httpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-    return HtmxResults.FullPageRedirect<Home>(httpContext);
+    return httpContext.RedirectTo<Home>();
 });
+
+app.MapGet("/api/forecasts/json",
+    () => new JsonResult(ForecastsService.GetNextForecasts()));
 
 await app.RunAsync();
 return;
@@ -162,7 +149,7 @@ public static class ForecastsService
         "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
     };
 
-    public static IEnumerable<WeatherForecast> GetNextForecasts() => Enumerable.Range(1, 5).Select(index =>
+    public static IEnumerable<WeatherForecast> GetNextForecasts() => Enumerable.Range(1, 10).Select(index =>
             new WeatherForecast
             (
                 DateOnly.FromDateTime(DateTime.Now.AddDays(index)),

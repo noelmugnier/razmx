@@ -2,13 +2,12 @@ namespace Razmx.Core;
 
 public class HtmxMainRouter : HtmxRouter
 {
-    private const string FixedIdentifier = "main-router";
+    private const string _identifier = "main";
 
     public HtmxMainRouter()
     {
-        SetIdentifier(FixedIdentifier);
-        HtmlTag = "main";
+        HtmlTag = _identifier;
     }
 
-    public static string Id => $"#{FixedIdentifier}";
+    public static string Id => _identifier;
 }

@@ -1,22 +1,19 @@
 @page "/forecasts"
 @attribute [Authorize]
 
-<HtmxAppPage PageName="Weather Forecasts">
-    <h1>Weather Forecasts</h1>
+<HtmxAppPage>
+    <HtmxPageTitle>@Title</HtmxPageTitle>
+    <h1>@Title</h1>
 
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core" target="_blank">building Web apps with ASP.NET Core</a>.</p>
-
-    <HtmxGet Url="/api/forecasts" hx-target="#forecasts">Refresh</HtmxGet>
+    <HtmxGet Url="/api/forecasts/json" hx-target="#forecasts">Refresh</HtmxGet>
 
     <div id="forecasts">
-        <Forecasts Value="_forecasts"/>
+        <Forecasts Model="_forecasts"/>
     </div>
-
-    <HtmxPost Url="/api/forecasts" HxRetarget="@HtmxMainRouter.Id">Create</HtmxPost>
-    <HtmxPut Url="/api/forecasts/1234">Update</HtmxPut>
 </HtmxAppPage>
 
 @code{
+    private static string Title => "Weather Forecasts";
     private IEnumerable<WeatherForecast> _forecasts;
 
     protected override void OnInitialized()

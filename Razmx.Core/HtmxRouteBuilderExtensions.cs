@@ -26,14 +26,6 @@ public static class HtmxRouteBuilderExtensions
         return endpoints;
     }
 
-    public static IEndpointRouteBuilder MapDefaultPage<TComponent>(this IEndpointRouteBuilder endpoints, string defaultRouteTemplate = "/", string defaultRouteName = "Home") where TComponent : IComponent
-    {
-        var htmxComponent = typeof(TComponent);
-        RegisterEndpoint(endpoints, htmxComponent, defaultRouteTemplate, defaultRouteName);
-
-        return endpoints;
-    }
-
     public static IEndpointRouteBuilder MapNotFoundPage<TComponent>(this IEndpointRouteBuilder endpoints) where TComponent : IComponent
     {
         var htmxComponent = typeof(TComponent);
@@ -41,10 +33,12 @@ public static class HtmxRouteBuilderExtensions
         {
             var parameters = ExtractComponentParameters(context);
             return new RazorComponentResult(htmxComponent, parameters);
-        }).WithName("NotFound");
+        }).WithName(htmxComponent.FullName!);
 
         var authorizeAttributes = htmxComponent.GetCustomAttributes(typeof(AuthorizeAttribute), true);
-        if (authorizeAttributes.Any())
+        var anonymousAttributes = htmxComponent.GetCustomAttributes(typeof(AllowAnonymousAttribute), true);
+
+        if (anonymousAttributes.Length == 0 && authorizeAttributes.Length != 0)
         {
             endpoint.RequireAuthorization();
         }
@@ -55,32 +49,39 @@ public static class HtmxRouteBuilderExtensions
     private static void RegisterEndpoint(IEndpointRouteBuilder endpoints, Type htmxComponent, string routeTemplate,
         string routeName)
     {
-        var redirectToPageIfAuthenticated = htmxComponent.GetCustomAttribute(typeof(RedirectToPageIfAuthenticatedAttribute<>));
-        var redirectToIfAuthenticated = htmxComponent.GetCustomAttribute<RedirectToIfAuthenticatedAttribute>();
         var endpoint = endpoints.MapGet(routeTemplate, (HttpContext context) =>
         {
-            var isAuthenticated = context.User.Identity?.IsAuthenticated ?? false;
-            if (isAuthenticated && redirectToPageIfAuthenticated != null)
-            {
-                return HtmxResults.RedirectToRoute(context, ((RedirectToIfAuthenticatedAttribute)redirectToPageIfAuthenticated).RedirectTo);
-            }
-
-            if (isAuthenticated && redirectToIfAuthenticated != null)
-            {
-                return HtmxResults.RedirectToUrl(context, redirectToIfAuthenticated.RedirectTo);
-            }
-
             var parameters = ExtractComponentParameters(context);
-            return new RazorComponentResult(htmxComponent, parameters);
+            var component = new RazorComponentResult(htmxComponent, parameters);
+
+            var isAuthenticated = context.User.Identity?.IsAuthenticated ?? false;
+            if (!isAuthenticated)
+            {
+                return component;
+            }
+
+            var redirectToPageIfAuthenticated = htmxComponent.GetCustomAttribute(typeof(RedirectIfAuthenticatedAttribute<>));
+            if (redirectToPageIfAuthenticated != null)
+            {
+                return context.NavigateToRoute(((RedirectIfAuthenticatedAttribute)redirectToPageIfAuthenticated).RedirectTo);
+            }
+
+            var redirectToIfAuthenticated = htmxComponent.GetCustomAttribute<RedirectIfAuthenticatedAttribute>();
+            if (redirectToIfAuthenticated != null)
+            {
+                return context.NavigateToUrl(redirectToIfAuthenticated.RedirectTo);
+            }
+
+            return component;
         }).WithName(routeName);
 
         var authorizeAttributes = htmxComponent.GetCustomAttributes(typeof(AuthorizeAttribute), true);
-        if (authorizeAttributes.Any())
+        var anonymousAttributes = htmxComponent.GetCustomAttributes(typeof(AllowAnonymousAttribute), true);
+
+        if (!anonymousAttributes.Any() && authorizeAttributes.Any())
         {
             endpoint.RequireAuthorization();
         }
-
-        var anonymousAttributes = htmxComponent.GetCustomAttributes(typeof(AllowAnonymousAttribute), true);
     }
 
     private static Dictionary<string, object?> ExtractComponentParameters(HttpContext context)

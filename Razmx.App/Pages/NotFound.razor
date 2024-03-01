@@ -1,8 +1,8 @@
-@page "/not-found"
 @namespace Razmx.App.Pages
 
-<HtmxAppPage title="Not found">
-    <h4>Page not found</h4>
+<HtmxAppPage>
+    <HtmxPageTitle>@Title</HtmxPageTitle>
+    <h1>@Title</h1>
 
     @if (!string.IsNullOrEmpty(Error))
     {
@@ -14,6 +14,8 @@
 </HtmxAppPage>
 
 @code {
+    private static string Title => "Not found";
+
     [Parameter] public string? Error { get; set; }
     [Parameter] public string? Path { get; set; }
 }

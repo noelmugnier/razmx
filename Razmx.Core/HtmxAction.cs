@@ -2,98 +2,91 @@ using System.Text.Json;
 
 namespace Razmx.Core;
 
-public class HtmxAction : HtmxComponent
+public abstract class HtmxAction : ComponentBase
 {
-    [CascadingParameter] private HttpContext? HttpContext { get; set; }
+    [CascadingParameter] protected HttpContext? HttpContext { get; set; }
 
-    [Parameter] public string Url { get; set; } = default!;
+    protected HttpVerb Method { get; set; } = HttpVerb.GET;
+
+    [Parameter] public string Url { get; set; } = string.Empty;
     [Parameter] public string HtmlType { get; set; } = "button";
-    [Parameter] public HttpVerb Method { get; set; }
-    [Parameter] public HxSwap? HxSwap { get; set; }
-    [Parameter] public string? HxRetarget { get; set; }
-    [Parameter] public IDictionary<string, object> HxHeaders { get; set; } = new Dictionary<string, object>();
-    [Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object> AdditionalAttributes { get; set; } = new();
-    [Parameter] public RenderFragment ChildContent { get; set; } = default!;
+    [Parameter] public string? Retarget { get; set; }
 
-    protected override RenderFragment GenerateFragmentToRender()
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object> AdditionalAttributes { get; set; } = new();
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    protected HtmxAction()
     {
         if (string.IsNullOrWhiteSpace(Url) && !string.IsNullOrWhiteSpace(HttpContext?.Request.Path.Value))
         {
             Url = $"{HttpContext.Request.Path.Value}{HttpContext.Request.QueryString}";
         }
-
-        RenderFragment fragment = builder =>
-        {
-            builder.OpenElement(0, HtmlType);
-
-            switch (Method)
-            {
-                case HttpVerb.GET:
-                    AdditionalAttributes["hx-get"] = Url;
-                    break;
-                case HttpVerb.POST:
-                    AdditionalAttributes["hx-post"] = Url;
-                    break;
-                case HttpVerb.PUT:
-                    AdditionalAttributes["hx-put"] = Url;
-                    break;
-                case HttpVerb.PATCH:
-                    AdditionalAttributes["hx-patch"] = Url;
-                    break;
-                case HttpVerb.DELETE:
-                    AdditionalAttributes["hx-delete"] = Url;
-                    break;
-                default:
-                    throw new InvalidOperationException("Invalid method");
-            }
-
-            if(HtmlType == "button")
-            {
-                AdditionalAttributes.TryAdd("type", "button");
-            }
-
-            if (HxSwap != null)
-            {
-                AdditionalAttributes["hx-swap"] = HxSwap.ToString();
-            }
-
-            if(!string.IsNullOrWhiteSpace(HxRetarget))
-            {
-                HxHeaders["hx-retarget"] = HxRetarget;
-            }
-
-            if (HxHeaders.Count != 0)
-            {
-                AdditionalAttributes["hx-headers"] = JsonSerializer.Serialize(HxHeaders);
-            }
-
-            foreach (var attribute in AdditionalAttributes)
-            {
-                builder.AddAttribute(1, attribute.Key, attribute.Value);
-            }
-
-            if(HtmlType != "input")
-            {
-                builder.AddContent(2, ChildContent);
-            }
-
-            builder.CloseElement();
-        };
-
-        return fragment;
     }
-}
 
-public enum HxSwap
-{
-    innerHTML,
-    outerHTML,
-    afterbegin,
-    beforebegin,
-    beforeend,
-    afterend,
-    delete,
-    none
+    protected override void BuildRenderTree(RenderTreeBuilder builder)
+    {
+        builder.OpenElement(0, HtmlType);
+
+        switch (Method)
+        {
+            case HttpVerb.GET:
+                AdditionalAttributes["hx-get"] = Url;
+                break;
+            case HttpVerb.POST:
+                AdditionalAttributes["hx-post"] = Url;
+                break;
+            case HttpVerb.PUT:
+                AdditionalAttributes["hx-put"] = Url;
+                break;
+            case HttpVerb.PATCH:
+                AdditionalAttributes["hx-patch"] = Url;
+                break;
+            case HttpVerb.DELETE:
+                AdditionalAttributes["hx-delete"] = Url;
+                break;
+            default:
+                throw new InvalidOperationException("Invalid method");
+        }
+
+        if (HtmlType == "button")
+        {
+            AdditionalAttributes.TryAdd("type", "button");
+        }
+
+        AdditionalAttributes.TryAdd("hx-target", HtmxMainRouter.Id);
+
+        var hxHeaders = new Dictionary<string, string>();
+        if (AdditionalAttributes.TryGetValue("hx-headers", out var additionalAttribute))
+        {
+            hxHeaders = additionalAttribute as Dictionary<string, string> ?? new Dictionary<string, string>();
+        }
+
+        if (!string.IsNullOrWhiteSpace(Retarget))
+        {
+            hxHeaders["hx-retarget"] = Retarget;
+        }
+
+        if (hxHeaders.Count != 0)
+        {
+            AdditionalAttributes["hx-headers"] = JsonSerializer.Serialize(hxHeaders);
+        }
+
+        foreach (var attribute in AdditionalAttributes)
+        {
+            builder.AddAttribute(1, attribute.Key, attribute.Value);
+        }
+
+        if (HtmlType != "input")
+        {
+            builder.AddContent(3, ChildContent);
+        }
+
+        builder.CloseElement();
+
+        base.BuildRenderTree(builder);
+    }
 }
 
 public class HtmxGet : HtmxAction

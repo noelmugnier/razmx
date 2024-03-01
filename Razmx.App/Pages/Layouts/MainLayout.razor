@@ -8,13 +8,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <base href="/"/>
     <HeadOutlet/>
-    <link rel="icon" type="image/png" href="favicon.ico"/>
+    <link rel="icon" type="image/png" href="favicon.png"/>
     <link href="/css/app.min.css" rel="stylesheet"/>
-    <link href="/css/inter.css" rel="stylesheet">
+    @* <link href="/css/inter.css" rel="stylesheet"> *@
     <script src="/js/htmx.min.js"></script>
 </head>
 
-<body hx-boost="true" hx-history="false">
+<body hx-boost="true" hx-history="false" hx-target="main">
 <AppBar/>
 <HtmxMainRouter>
     @Body

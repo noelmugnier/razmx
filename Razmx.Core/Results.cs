@@ -5,118 +5,109 @@ namespace Razmx.Core;
 
 public static class HtmxResults
 {
-    public static IResult RedirectToCreated<TPage>(HttpContext context, object? routeValues = null)
+    public static IResult NavigateTo<TPage>(this HttpContext context, object? routeValues = null, bool replaceUrl = false)
         where TPage : IComponent
     {
         var routeName = typeof(TPage).FullName!;
         var path = GeneratePathForRouteName(context, routeName, routeValues);
 
-        var retarget = context.Request.Headers["HX-Retarget"];
-        if (!StringValues.IsNullOrEmpty(retarget))
+        if (!context.Request.RequireHtmxPartialResponse())
+            return TypedResults.Redirect(routeName);
+
+        if (replaceUrl)
         {
-            path = $"{{\"path\":\"{path}\", \"target\":\"{retarget}\"}}";
+            context.Response.Headers.TryAdd("HX-Replace-Url", "true");
         }
 
-        context.Response.Headers.TryAdd("HX-Location", path);
-        if (context.Request.CanRedirectWithHtmx())
-        {
-            return TypedResults.CreatedAtRoute(routeName, routeValues);
-        }
-
-        return TypedResults.RedirectToRoute(routeName, routeValues);
+        context.Response.Headers.TryAdd("HX-Location", context.BuildHtmxLocationHeader(path));
+        return TypedResults.Ok();
     }
 
-    public static IResult Redirect<TPage>(HttpContext context, object? routeValues = null)
+    public static IResult RedirectTo<TPage>(this HttpContext context, object? routeValues = null, bool replaceUrl = false)
         where TPage : IComponent
     {
         var routeName = typeof(TPage).FullName!;
         var path = GeneratePathForRouteName(context, routeName, routeValues);
-        path = AddRetargetToLocationPathIfRequired(context, path);
+        if (!context.Request.RequireHtmxPartialResponse())
+            return TypedResults.Redirect(path);
 
-        context.Response.Headers.TryAdd("HX-Location", path);
-        if (context.Request.CanRedirectWithHtmx())
+        if (replaceUrl)
         {
-            return TypedResults.Ok();
+            context.Response.Headers.TryAdd("HX-Replace-Url", "true");
         }
-
-        return TypedResults.RedirectToRoute(routeName, routeValues);
-    }
-
-    private static string? AddRetargetToLocationPathIfRequired(HttpContext context, string? path)
-    {
-        var retarget = context.Request.Headers["HX-Retarget"];
-        if (!StringValues.IsNullOrEmpty(retarget))
-        {
-            path = $"{{\"path\":\"{path}\", \"target\":\"{retarget}\"}}";
-        }
-
-        return path;
-    }
-
-    public static IResult FullPageRedirectToCreated<TPage>(HttpContext context, object? routeValues = null)
-        where TPage : IComponent
-    {
-        var routeName = typeof(TPage).FullName!;
-        var path = GeneratePathForRouteName(context, routeName, routeValues);
 
         context.Response.Headers.TryAdd("HX-Redirect", path);
-        if (context.Request.CanRedirectWithHtmx())
-        {
-            return TypedResults.CreatedAtRoute(routeName, routeValues);
-        }
-
-        return TypedResults.RedirectToRoute(routeName, routeValues);
+        return TypedResults.Ok();
     }
 
-    public static IResult FullPageRedirect<TPage>(HttpContext context, object? routeValues = null)
-        where TPage : IComponent
+    public static IResult RedirectToUrl(this HttpContext context, string url, bool replaceUrl = false)
     {
-        var routeName = typeof(TPage).FullName!;
-        var path = GeneratePathForRouteName(context, routeName, routeValues);
+        if (!context.Request.RequireHtmxPartialResponse())
+            return Results.Redirect(url);
 
-        context.Response.Headers.TryAdd("HX-Redirect", path);
-        if (context.Request.CanRedirectWithHtmx())
+        if (replaceUrl)
         {
-            return Results.Ok();
+            context.Response.Headers.TryAdd("HX-Replace-Url", "true");
         }
 
-        return Results.Redirect(path);
-    }
-
-    public static IResult FullPageRedirect(HttpContext context, string url)
-    {
         context.Response.Headers.TryAdd("HX-Redirect", url);
-        if (context.Request.CanRedirectWithHtmx())
-        {
-            return Results.Ok();
-        }
-
-        return Results.Redirect(url);
+        return Results.Ok();
     }
 
-    public static IResult RedirectToUrl(HttpContext context, string url)
+    public static IResult Refresh(this HttpContext context)
     {
-        var path = AddRetargetToLocationPathIfRequired(context, url);
-        if (context.Request.CanRedirectWithHtmx())
-        {
-            context.Response.Headers.TryAdd("HX-Location", path);
-            return Results.Ok();
-        }
+        if (!context.Request.RequireHtmxPartialResponse())
+            return Results.LocalRedirect(context.Request.Path.Value);
 
-        return Results.Redirect(url);
+        context.Response.Headers.TryAdd("HX-Refresh", "true");
+        return Results.Ok();
     }
 
-    public static IResult RedirectToRoute(HttpContext context, string routeName)
+    public static IResult NavigateToUrl(this HttpContext context, string url, bool replaceUrl = false)
     {
-        var url = GeneratePathForRouteName(context, routeName, null);
-        var path = AddRetargetToLocationPathIfRequired(context, url);
+        if (!context.Request.RequireHtmxPartialResponse())
+            return Results.Redirect(url);
+
+        if (replaceUrl)
+        {
+            context.Response.Headers.TryAdd("HX-Replace-Url", "true");
+        }
+
+        context.Response.Headers.TryAdd("HX-Location", context.BuildHtmxLocationHeader(url));
+        return Results.Ok();
+    }
+
+    public static IResult NavigateToRoute(this HttpContext context, string routeName, object? routeValues = null,
+        bool replaceUrl = false)
+    {
+        var url = GeneratePathForRouteName(context, routeName, routeValues);
+        if (!context.Request.RequireHtmxPartialResponse())
+            return Results.RedirectToRoute(routeName);
+
+        if (replaceUrl)
+        {
+            context.Response.Headers.TryAdd("HX-Replace-Url", "true");
+        }
+
+        var path = context.BuildHtmxLocationHeader(url);
         context.Response.Headers.TryAdd("HX-Location", path);
-        if (context.Request.CanRedirectWithHtmx())
-        {
-            return Results.Ok();
-        }
+        return Results.Ok();
+    }
 
-        return Results.RedirectToRoute(routeName);
+    public static IResult NoContent(this HttpContext context)
+    {
+        if (!context.Request.RequireHtmxPartialResponse())
+            return TypedResults.NoContent();
+
+        return TypedResults.Ok();
+    }
+
+    public static string BuildHtmxLocationHeader(this HttpContext context, string path)
+    {
+        var retarget = context.Request.Headers["HX-Retarget"];
+        return StringValues.IsNullOrEmpty(retarget)
+            ? path
+            : $"{{\"path\":\"{path}\", \"target\":\"{retarget}\"}}";
     }
 
     private static string? GeneratePathForRouteName(HttpContext context, string routeName, object? routeValues)

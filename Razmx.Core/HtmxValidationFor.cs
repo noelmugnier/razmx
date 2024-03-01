@@ -1,8 +1,6 @@
-using System.Dynamic;
-
 namespace Razmx.Core;
 
-public class HtmxFieldErrors : HtmxComponent
+public class HtmxValidationFor : HtmxComponent
 {
     [CascadingParameter] private ModelState State { get; set; }
     [Parameter] public string For { get; set; } = default!;
@@ -12,13 +10,13 @@ public class HtmxFieldErrors : HtmxComponent
         if (State == null)
         {
             throw new InvalidOperationException($"{nameof(State)} requires a cascading " +
-                                                $"parameter of type {nameof(ModelState)}. For example, you can use {nameof(HtmxFieldErrors)} " +
+                                                $"parameter of type {nameof(ModelState)}. For example, you can use {nameof(HtmxValidationFor)} " +
                                                 $"inside an HtmxForm.");
         }
 
         if (string.IsNullOrWhiteSpace(For))
         {
-            throw new InvalidOperationException($"{nameof(For)} attribute is required on {nameof(HtmxFieldErrors)}");
+            throw new InvalidOperationException($"{nameof(For)} attribute is required on {nameof(HtmxValidationFor)}");
         }
 
         base.OnInitialized();
@@ -44,26 +42,5 @@ public class HtmxFieldErrors : HtmxComponent
         };
 
         return fragment;
-    }
-}
-
-public static class ObjectExtensions
-{
-    public static IDictionary<string, object?> ToExpando<T>(this T? obj)
-    {
-        if (obj is null)
-            return new ExpandoObject();
-
-        var expando = new ExpandoObject();
-
-        var type = obj.GetType();
-
-        foreach (var propertyInfo in type.GetProperties())
-        {
-            var currentValue = propertyInfo.GetValue(obj);
-            expando.TryAdd(propertyInfo.Name, currentValue);
-        }
-
-        return expando;
     }
 }

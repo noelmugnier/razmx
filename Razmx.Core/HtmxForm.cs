@@ -10,11 +10,8 @@ public class HtmxForm<T> : HtmxComponent
 
     [Parameter] public ModelState<T>? State { get; set; }
     [Parameter] public HttpVerb Method { get; set; } = HttpVerb.POST;
-    [Parameter] public string HxTarget { get; set; } = HtmxMainRouter.Id;
-    [Parameter] public HxSwap? HxSwap { get; set; }
-    [Parameter] public string? HxRetarget { get; set; }
+    [Parameter] public string? Retarget { get; set; }
     [Parameter] public bool UseAntiforgeryToken { get; set; } = true;
-    [Parameter] public IDictionary<string, object> HxHeaders { get; set; } = new Dictionary<string, object>();
     [Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object> AdditionalAttributes { get; set; } = new();
     [Parameter] public RenderFragment<ModelState<T>> ChildContent { get; set; } = default!;
 
@@ -52,21 +49,22 @@ public class HtmxForm<T> : HtmxComponent
                     throw new InvalidOperationException("Invalid method");
             }
 
-            AdditionalAttributes.TryAdd("hx-target", HxTarget);
+            AdditionalAttributes.TryAdd("hx-target", HtmxMainRouter.Id);
 
-            if (HxSwap != null)
+            var hxHeaders = new Dictionary<string, string>();
+            if (AdditionalAttributes.TryGetValue("hx-headers", out var additionalAttribute))
             {
-                AdditionalAttributes["hx-swap"] = HxSwap.ToString();
+                hxHeaders = additionalAttribute as Dictionary<string, string> ?? new Dictionary<string, string>();
             }
 
-            if(!string.IsNullOrWhiteSpace(HxRetarget))
+            if (!string.IsNullOrWhiteSpace(Retarget))
             {
-                HxHeaders["hx-retarget"] = HxRetarget;
+                hxHeaders["hx-retarget"] = Retarget;
             }
 
-            if (HxHeaders.Count != 0)
+            if (hxHeaders.Count != 0)
             {
-                AdditionalAttributes["hx-headers"] = JsonSerializer.Serialize(HxHeaders);
+                AdditionalAttributes["hx-headers"] = JsonSerializer.Serialize(hxHeaders);
             }
 
             foreach (var attribute in AdditionalAttributes)

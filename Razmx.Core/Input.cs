@@ -16,7 +16,7 @@ public class Input : HtmxComponent
         if (State == null)
         {
             throw new InvalidOperationException($"{nameof(State)} requires a cascading " +
-                                                $"parameter of type {nameof(ModelState)}. For example, you can use {nameof(HtmxFieldErrors)} " +
+                                                $"parameter of type {nameof(ModelState)}. For example, you can use {nameof(HtmxValidationFor)} " +
                                                 $"inside an HtmxForm.");
         }
 
@@ -35,7 +35,7 @@ public class Input : HtmxComponent
             var stateClass = string.Empty;
             if (State.Errors.Any())
             {
-                stateClass = State.Errors.Keys.Contains(Name) ? " is-invalid" : " is-valid";
+                stateClass = State.Errors.ContainsKey(Name) ? " is-invalid" : " is-valid";
                 if (AdditionalAttributes.TryGetValue("class", out var classes))
                 {
                     AdditionalAttributes["class"] = classes + stateClass;
@@ -69,7 +69,7 @@ public class Input : HtmxComponent
 
             if (DisplayFieldErrors)
             {
-                builder.OpenComponent<HtmxFieldErrors>(6);
+                builder.OpenComponent<HtmxValidationFor>(6);
                 builder.AddComponentParameter(7, "For", Name);
                 builder.CloseComponent();
             }

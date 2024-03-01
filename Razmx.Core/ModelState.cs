@@ -16,3 +16,8 @@ public class ModelState<T>(T state, Dictionary<string, string>? errors = null) :
         return Model.ToExpando();
     }
 }
+
+public interface IFormState<T>
+{
+    ModelState<T> State { get; }
+}

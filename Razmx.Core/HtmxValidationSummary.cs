@@ -1,6 +1,6 @@
 namespace Razmx.Core;
 
-public class FormErrors : HtmxComponent
+public class HtmxValidationSummary : HtmxComponent
 {
     [CascadingParameter] private ModelState? State { get; set; }
     [Parameter] public string Message { get; set; } = "The following errors occured";
@@ -12,7 +12,7 @@ public class FormErrors : HtmxComponent
         if (State == null)
         {
             throw new InvalidOperationException($"{nameof(State)} requires a cascading " +
-                                                $"parameter of type {nameof(ModelState)}. For example, you can use {nameof(FormErrors)} " +
+                                                $"parameter of type {nameof(ModelState)}. For example, you can use {nameof(HtmxValidationSummary)} " +
                                                 $"inside an HtmxForm.");
         }
 

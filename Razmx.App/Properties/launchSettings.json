@@ -27,7 +27,7 @@
                 "ASPNETCORE_ENVIRONMENT": "Development"
             }
         },
-        "WebAppRazor Watch": {
+        "watch": {
             "commandName": "Executable",
             "executablePath": "dotnet.exe",
             "launchBrowser": true,
