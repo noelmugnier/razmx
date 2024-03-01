@@ -34,8 +34,8 @@ public class HtmxValidationFor : HtmxComponent
 
             foreach (var error in inputErrors)
             {
-                builder.OpenElement(2, "span");
-                builder.AddAttribute(3, "class", "error-message");
+                builder.OpenElement(1, "div");
+                builder.AddAttribute(2, "class", "validation-message");
                 builder.AddContent(3, error);
                 builder.CloseElement();
             }

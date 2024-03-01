@@ -2,7 +2,7 @@
 
 <HtmxAppPage>
     <HtmxPageTitle>@Title</HtmxPageTitle>
-    <h1>@Title</h1>
+    <h1 class="mb-8 text-3xl font-bold">@Title</h1>
 
     @if (!string.IsNullOrEmpty(Error))
     {
@@ -10,7 +10,6 @@
             @Error
         </div>
     }
-
 </HtmxAppPage>
 
 @code {

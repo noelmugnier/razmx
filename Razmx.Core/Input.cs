@@ -32,19 +32,23 @@ public class Input : HtmxComponent
     {
         RenderFragment fragment = builder =>
         {
-            var stateClass = string.Empty;
-            if (State.Errors.Any())
+            var classes = string.Empty;
+            if (AdditionalAttributes.TryGetValue("class", out var existingClasses))
             {
-                stateClass = State.Errors.ContainsKey(Name) ? " is-invalid" : " is-valid";
-                if (AdditionalAttributes.TryGetValue("class", out var classes))
-                {
-                    AdditionalAttributes["class"] = classes + stateClass;
-                }
-                else
-                {
-                    AdditionalAttributes["class"] = stateClass;
-                }
+                classes = existingClasses + " ";
             }
+
+            if (State.Errors.Any() && State.Errors.ContainsKey(Name))
+            {
+                classes += " invalid";
+                AdditionalAttributes["aria-invalid"] = "true";
+            }
+            else
+            {
+                classes += " valid";
+            }
+
+            AdditionalAttributes["class"] = classes;
 
             AdditionalAttributes["name"] = Name;
             AdditionalAttributes["id"] = Id ?? Name;
@@ -53,24 +57,24 @@ public class Input : HtmxComponent
             {
                 builder.OpenElement(1, "label");
                 builder.AddAttribute(2, "for", Name);
-                builder.AddAttribute(3, "class", stateClass);
+                builder.AddAttribute(3, "class", classes);
                 builder.AddContent(4, Label);
                 builder.CloseElement();
             }
 
-            builder.OpenElement(4, "input");
+            builder.OpenElement(5, "input");
 
             foreach (var attribute in AdditionalAttributes)
             {
-                builder.AddAttribute(5, attribute.Key, attribute.Value);
+                builder.AddAttribute(6, attribute.Key, attribute.Value);
             }
 
             builder.CloseElement();
 
             if (DisplayFieldErrors)
             {
-                builder.OpenComponent<HtmxValidationFor>(6);
-                builder.AddComponentParameter(7, "For", Name);
+                builder.OpenComponent<HtmxValidationFor>(7);
+                builder.AddComponentParameter(8, "For", Name);
                 builder.CloseComponent();
             }
         };

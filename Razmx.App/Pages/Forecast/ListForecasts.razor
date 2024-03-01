@@ -3,11 +3,12 @@
 
 <HtmxAppPage>
     <HtmxPageTitle>@Title</HtmxPageTitle>
-    <h1>@Title</h1>
+    <div class="flex justify-between">
+        <h1 class="mb-2 text-3xl font-bold">@Title</h1>
+        <HtmxGet Url="/api/forecasts" hx-target="#forecasts" class="px-4 py-2 font-medium rounded bg-blue-500 hover:bg-blue-600 text-white transition">Refresh</HtmxGet>
+    </div>
 
-    <HtmxGet Url="/api/forecasts/json" hx-target="#forecasts">Refresh</HtmxGet>
-
-    <div id="forecasts">
+    <div id="forecasts" class="mt-8">
         <Forecasts Model="_forecasts"/>
     </div>
 </HtmxAppPage>

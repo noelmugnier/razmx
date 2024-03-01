@@ -1,7 +1,7 @@
 const defaultTheme = require('tailwindcss/defaultTheme')
 
 module.exports = {
-  safelist: ["is-invalid", "is-valid"],
+  safelist: ["invalid", "valid"],
   content: ["**/*.razor", "**/*.cshtml", "**/*.html", "**/*.cs"],
   theme: {
     extend: {

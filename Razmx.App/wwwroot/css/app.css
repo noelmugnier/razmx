@@ -2,15 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
-input.is-invalid {
+input.invalid {
     @apply border-red-500 text-red-900 placeholder-red-500
     border-2;
 }
 
-input + span.error-message {
-    @apply text-red-900;
+input + div.validation-message {
+    @apply text-red-500;
 }
 
-details.errors-summary li {
-    @apply text-red-900;
+.validation-errors li.validation-message {
+    @apply text-red-500;
 }

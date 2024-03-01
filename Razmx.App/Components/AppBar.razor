@@ -1,41 +1,39 @@
-<nav>
-    <h3>
-        <HtmxLink href="/">Home</HtmxLink>
-    </h3>
-    @if (IsAuthenticated)
-    {
+<nav class="w-full bg-white px-12 py-4">
+    <div class="flex justify-between items-center w-full max-w-6xl mx-auto">
         <h3>
-            <HtmxLink href="/forecasts">Forecasts</HtmxLink>
+            <HtmxLink href="/">Home</HtmxLink>
         </h3>
-    }
+        <h3>
+            <HtmxLink href="/contacts">Contacts</HtmxLink>
+        </h3>
+        @if (IsAuthenticated)
+        {
+            <h3>
+                <HtmxLink href="/forecasts">Forecasts</HtmxLink>
+            </h3>
+        }
 
-    <h3>
-        <HtmxLink href="/privacy">Privacy</HtmxLink>
-    </h3>
-
-    @if (IsAuthenticated)
-    {
-        <h3>
-            Hello @Username !
-            <HtmxPost Url="/logout">Logout</HtmxPost>
-        </h3>
-    }
-    else
-    {
-        <h3>
-            <HtmxLink href="/login">Login</HtmxLink>
-        </h3>
-        <h3>
-            <HtmxLink href="/register">Register</HtmxLink>
-        </h3>
-    }
+        @if (IsAuthenticated)
+        {
+            <h3>
+                Hello @Username !
+                <HtmxPost Url="/logout" class="px-4 py-2 mx-2 font-medium rounded bg-gray-500 hover:bg-gray-600 text-white transition">Logout</HtmxPost>
+            </h3>
+        }
+        else
+        {
+            <h3>
+                <HtmxLink href="/login" class="px-4 py-2 mx-2 font-medium rounded bg-blue-500 hover:bg-blue-600 text-white transition">Login</HtmxLink>
+            </h3>
+        }
+    </div>
 </nav>
 
 @code {
 
     [CascadingParameter] private HttpContext? HttpContext { get; set; }
     private bool IsAuthenticated => HttpContext?.User.Identity?.IsAuthenticated == true;
-    
+
     private string? Username => HttpContext?.User.Identity?.Name;
 
 }

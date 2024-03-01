@@ -5,19 +5,26 @@
 
 <HtmxAppPage>
     <HtmxPageTitle>@Title</HtmxPageTitle>
-    <h1>@Title</h1>
+    <h1 class="mb-8 text-3xl font-bold">@Title</h1>
 
     <HtmxForm State="State">
         <Hidden Name="@nameof(ReturnUrl)" value="@ReturnUrl"/>
 
-        <Input type="text" name="@nameof(Email)" value="@Email" placeholder="email" required/>
-        <Input type="password" name="@nameof(Password)" value="@Password" placeholder="password" required/>
+        <div class="pb-8 pr-6 w-full lg:w-1/2 space-y-2">
+            <label for="@nameof(Email)" class="text-sm font-bold">Email</label>
+            <Input type="text" name="@nameof(Email)" value="@Email" placeholder="type your username" required class="relative px-6 py-3 w-full rounded border-gray-300"/>
+        </div>
+        <div class="pb-8 pr-6 w-full lg:w-1/2 space-y-2">
+            <label for="@nameof(Password)" class="text-sm font-bold">Password</label>
+            <Input type="password" name="@nameof(Password)" value="@Password" placeholder="type your password" required class="relative px-6 py-3 w-full rounded border-gray-300"/>
+        </div>
 
         <HtmxValidationSummary/>
 
-        <button type="submit">Login</button>
-        <HtmxLink href="/register">Register</HtmxLink>
-        <input type="hidden" Value="@ReturnUrl"/>
+        <div class="flex items-center justify-end px-4 py-4 w-full lg:w-1/2">
+            <HtmxLink href="/register" class="px-4 py-2 mx-2 font-medium rounded bg-gray-500 hover:bg-gray-600 text-white transition">Register</HtmxLink>
+            <button type="submit" class="px-4 py-2 mx-2 font-medium rounded bg-blue-500 hover:bg-blue-600 text-white transition">Login</button>
+        </div>
     </HtmxForm>
 </HtmxAppPage>
 
@@ -28,7 +35,6 @@
 
     [Parameter] public StringValues? ReturnUrl { get; set; }
 
-    [Parameter]
-    public ModelState<LoginRequest> State { get; set; } = ModelState.Init(new LoginRequest());
+    [Parameter] public ModelState<LoginRequest> State { get; set; } = ModelState.Init(new LoginRequest());
 
 }

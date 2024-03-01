@@ -35,19 +35,8 @@ public class HtmxValidationSummary : HtmxComponent
                 return;
             }
 
-            builder.OpenElement(0, "details");
-            builder.AddAttribute(1, "class", "errors-summary");
-            if(ExpandSummary)
-            {
-                builder.AddAttribute(2, "open", "true");
-            }
-
-            builder.AddAttribute(1, "class", "errors-summary");
-            builder.OpenElement(1, "summary");
-            builder.AddContent(2, Message);
-            builder.CloseElement();
-
-            builder.OpenElement(3, "ol");
+            builder.OpenElement(1, "ol");
+            builder.AddAttribute(2, "class", "validation-errors");
             var model = State.ToExpando();
 
             foreach (var error in State.Errors)
@@ -57,11 +46,12 @@ public class HtmxValidationSummary : HtmxComponent
                     continue;
                 }
 
-                builder.OpenElement(4, "li");
+                builder.OpenElement(3, "li");
+                builder.AddAttribute(4, "class", "validation-message");
                 builder.AddContent(5, error.Value);
                 builder.CloseElement();
             }
-            builder.CloseElement();
+
             builder.CloseElement();
         };
 

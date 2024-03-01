@@ -1,7 +1,11 @@
-@foreach (var forecast in Model)
-{
-    <Forecast Value="@forecast"/>
-}
+<div class="px-2">
+    <div class="flex flex-wrap -mx-6">
+        @foreach (var forecast in Model)
+        {
+            <Forecast Value="@forecast"/>
+        }
+    </div>
+</div>
 
 @code
 {

@@ -1,0 +1,74 @@
+﻿@page "/contacts/search"
+@using Microsoft.EntityFrameworkCore
+
+<div class="bg-white rounded-md shadow overflow-x-auto">
+    <table class="w-full whitespace-nowrap">
+        <tr class="text-left font-bold">
+            <th class="pb-4 pt-6 px-6 w-1/4">Name</th>
+            <th class="pb-4 pt-6 px-6 w-1/4">Email</th>
+            <th class="pb-4 pt-6 px-6 w-1/4">City</th>
+            <th class="pb-4 pt-6 px-6 w-1/4">Phone</th>
+            <th class="pb-4 pt-6 px-6 w-1/4"></th>
+        </tr>
+
+        @if (Model.Count <= 0)
+        {
+            <tr class="hover:bg-gray-100 focus-within:bg-gray-100">
+                <td class="px-6 py-4 border-t" colspan="5">No contacts with that name found.</td>
+            </tr>
+        }
+
+        @foreach (var contact in Model)
+        {
+            <tr class="hover:bg-gray-100 focus-within:bg-gray-100 cursor-pointer" hx-get="@($"/contacts/{contact.Id}")" hx-push-url="true">
+                <td class="border-t">
+                    <a class="flex items-center px-6 py-4 focus:text-indigo-500">
+                        @contact.Name
+                    </a>
+                </td>
+                <td class="border-t">
+                    <a class="flex items-center px-6 py-4 focus:text-indigo-500">
+                        @contact.Email
+                    </a>
+                </td>
+                <td class="border-t">
+                    <a class="flex items-center px-6 py-4 focus:text-indigo-500">
+                        @contact.City
+                    </a>
+                </td>
+                <td class="border-t">
+                    <a class="flex items-center px-6 py-4 focus:text-indigo-500">
+                        @contact.Phone
+                    </a>
+                </td>
+                <td class="border-t">
+                    <HtmxDelete Url="@($"/api/contacts/{contact.Id}")" hx-target="closest tr" hx-sync="closest tr:drop" HxSwap="HxSwap.outerHTML" class="px-4 py-2 font-medium rounded bg-red-500 hover:bg-red-600 text-white transition">Delete</HtmxDelete>
+                </td>
+            </tr>
+        }
+    </table>
+</div>
+
+@code {
+    [SupplyParameterFromQuery] public string? ContactSearch { get; set; } = "";
+
+    [Inject] private AppDbContext AppDbContext { get; set; }
+
+    private List<Contact>? Model { get; set; }
+    private string? Test { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (string.IsNullOrEmpty(ContactSearch))
+        {
+            Model = await AppDbContext.Contacts.ToListAsync();
+        }
+        else
+        {
+            Model = await AppDbContext.Contacts
+                .Where(x => x.Name.Contains(ContactSearch))
+                .ToListAsync();
+        }
+    }
+
+}

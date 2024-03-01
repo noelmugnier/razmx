@@ -1,0 +1,92 @@
+﻿@page "/contacts/{Id:int}"
+@using Microsoft.EntityFrameworkCore
+@attribute [Authorize]
+
+<HtmxAppPage>
+    <HtmxPageTitle>Edit contact</HtmxPageTitle>
+    <h1 class="mb-8 text-3xl font-bold">
+        <a class="text-blue-500 hover:text-blue-600" href="/contacts" hx-target="main">
+            Contacts
+        </a>
+        <span class="text-blue-500 font-medium">/</span>
+        @Model.Name
+    </h1>
+
+    <div class="max-w-3xl bg-white rounded-md shadow overflow-hidden">
+        <h2 class="text-lg font-semibold pt-8 pl-8">Edit Contact</h2>
+        <EditForm method="post" Model="Model" OnValidSubmit="UpdateContact" FormName="EditContact" hx-post="@Nav.ToBaseRelativePath(Nav.Uri)" hx-headers='{"HX-RETARGET":"main"}'>
+            <DataAnnotationsValidator/>
+            <div class="flex flex-wrap p-8">
+                <div class="pb-8 pr-6 w-full lg:w-1/2 space-y-2">
+                    <label for="name">Title</label>
+                    <InputText id="name" @bind-Value="Model.Name" class="relative px-6 py-3 w-full rounded border-gray-300"/>
+                    <ValidationMessage For="() => Model.Name"/>
+                </div>
+                <div class="pb-8 pr-6 w-full lg:w-1/2 space-y-2">
+                    <label for="email">Email</label>
+                    <InputText type="email" id="email" @bind-Value="Model.Email" class="relative px-6 py-3 w-full rounded border-gray-300"/>
+                    <ValidationMessage For="() => Model.Email"/>
+                </div>
+                <div class="pb-8 pr-6 w-full lg:w-1/2 space-y-2">
+                    <label for="city">City</label>
+                    <InputText id="city" @bind-Value="Model.City" class="relative px-6 py-3 w-full rounded border-gray-300"/>
+                    <ValidationMessage For="() => Model.City"/>
+                </div>
+                <div class="pb-8 pr-6 w-full lg:w-1/2 space-y-2">
+                    <label for="phone">Phone</label>
+                    <InputText id="phone" @bind-Value="Model.Phone" class="relative px-6 py-3 w-full rounded border-gray-300"/>
+                    <ValidationMessage For="() => Model.Phone"/>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-end px-8 py-4 bg-gray-50 border-t border-gray-100">
+                <button type="submit" class="px-4 py-2 font-medium rounded bg-blue-500 hover:bg-blue-600 text-white transition">
+                    Save
+                </button>
+            </div>
+        </EditForm>
+    </div>
+    <div class="max-w-3xl bg-white rounded-md shadow overflow-hidden mt-8">
+        <div class="flex justify-between p-8">
+            <h2 class="text-lg font-semibold">Delete Contact</h2>
+            <EditForm method="post" Model="Model" OnValidSubmit="DeleteContact" FormName="DeleteContact" Enhance hx-post="@Nav.ToBaseRelativePath(Nav.Uri)" hx-headers='{"HX-RETARGET":"main"}'>
+                <button type="submit" class="px-4 py-2 font-medium rounded bg-red-500 hover:bg-red-600 text-white transition">
+                    Delete
+                </button>
+            </EditForm>
+        </div>
+    </div>
+</HtmxAppPage>
+
+@code {
+    [SupplyParameterFromForm] public Contact? Model { get; set; }
+    [Parameter] public int Id { get; set; }
+
+    [CascadingParameter] private HttpContext Context { get; set; }
+
+    [Inject] private NavigationManager Nav { get; set; }
+    [Inject] private AppDbContext AppDbContext { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Model ??= await AppDbContext.Contacts.Where(x => x.Id == Id).FirstAsync();
+    }
+
+    public async Task UpdateContact()
+    {
+        Model.Id = Id;
+        AppDbContext.Contacts.Update(Model);
+        await AppDbContext.SaveChangesAsync();
+
+        Nav.NavigateTo($"/contacts");
+    }
+
+    public async Task DeleteContact()
+    {
+        AppDbContext.Contacts.Remove(Model);
+        await AppDbContext.SaveChangesAsync();
+
+        Nav.NavigateTo($"/contacts");
+    }
+
+}
