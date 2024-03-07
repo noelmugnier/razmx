@@ -14,7 +14,7 @@
     <script src="/js/htmx.min.js"></script>
 </head>
 
-<body hx-boost="true" hx-history="false" hx-target="main" class="bg-gray-100 flex flex-col h-screen">
+<body hx-history="false" hx-target="@HtmxMainRouter.Id" class="bg-gray-100 flex flex-col h-screen">
 <AppBar/>
 <div class="flex flex-grow py-20 px-12">
     <HtmxMainRouter class="max-w-6xl mx-auto w-full">
@@ -22,9 +22,9 @@
     </HtmxMainRouter>
 </div>
 <footer class="flex justify-center w-full py-2">
-        <h3>
-            <HtmxLink href="/privacy" class=" align-baseline font-bold text-sm text-blue-500 hover:text-blue-800">Privacy</HtmxLink>
-        </h3>
+    <h3>
+        <HtmxLink href="/privacy" class=" align-baseline font-bold text-sm text-blue-500 hover:text-blue-800">Privacy</HtmxLink>
+    </h3>
 </footer>
 </body>
 </html>

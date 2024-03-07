@@ -1,17 +1,15 @@
 namespace Razmx.Core;
 
 public class HtmxFormComponentResult<TPage, TFormModel> : RazorComponentResult
-    where TPage : IFormState<TFormModel>
 {
-    public HtmxFormComponentResult() : base(typeof(TPage),
-        new ModelState<TFormModel>(default, new Dictionary<string, string>()))
+    public HtmxFormComponentResult() : this(default(TFormModel)!)
     {
     }
 
-    public HtmxFormComponentResult(ModelState<TFormModel> formState) : base(typeof(TPage),
+    public HtmxFormComponentResult(TFormModel formState, Dictionary<string, string>? errors = null) : base(typeof(TPage),
         new Dictionary<string, object?>
         {
-            ["State"] = formState
+            ["State"] = FormState.Init(formState, errors)
         })
     {
     }

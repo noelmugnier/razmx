@@ -1,8 +1,8 @@
 namespace Razmx.Core;
 
-public class Input : HtmxComponent
+public class HtmxInput : HtmxComponent
 {
-    [CascadingParameter] private ModelState? State { get; set; }
+    [CascadingParameter] private FormState? Context { get; set; }
     [Parameter] public bool DisplayFieldErrors { get; set; } = true;
     [Parameter] public string Name { get; set; } = default!;
     [Parameter] public string? Id { get; set; }
@@ -13,16 +13,16 @@ public class Input : HtmxComponent
 
     protected override void OnInitialized()
     {
-        if (State == null)
+        if (Context == null)
         {
-            throw new InvalidOperationException($"{nameof(State)} requires a cascading " +
-                                                $"parameter of type {nameof(ModelState)}. For example, you can use {nameof(HtmxValidationFor)} " +
+            throw new InvalidOperationException($"{nameof(Context)} requires a cascading " +
+                                                $"parameter of type {nameof(FormState)}. For example, you can use {nameof(HtmxValidationFor)} " +
                                                 $"inside an HtmxForm.");
         }
 
         if (string.IsNullOrWhiteSpace(Name))
         {
-            throw new InvalidOperationException($"{nameof(Name)} is required on {nameof(Input)}");
+            throw new InvalidOperationException($"{nameof(Name)} is required on {nameof(HtmxInput)}");
         }
 
         base.OnInitialized();
@@ -38,7 +38,7 @@ public class Input : HtmxComponent
                 classes = existingClasses + " ";
             }
 
-            if (State.Errors.Any() && State.Errors.ContainsKey(Name))
+            if (Context.Errors.Any() && Context.Errors.ContainsKey(Name))
             {
                 classes += " invalid";
                 AdditionalAttributes["aria-invalid"] = "true";
@@ -50,6 +50,7 @@ public class Input : HtmxComponent
 
             AdditionalAttributes["class"] = classes;
 
+            AdditionalAttributes["hx-validate"] = "true";
             AdditionalAttributes["name"] = Name;
             AdditionalAttributes["id"] = Id ?? Name;
 

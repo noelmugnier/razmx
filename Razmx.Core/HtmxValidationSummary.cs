@@ -2,17 +2,17 @@ namespace Razmx.Core;
 
 public class HtmxValidationSummary : HtmxComponent
 {
-    [CascadingParameter] private ModelState? State { get; set; }
+    [CascadingParameter] private FormState? Context { get; set; }
     [Parameter] public string Message { get; set; } = "The following errors occured";
     [Parameter] public bool ShowModelPropertyErrors { get; set; }
     [Parameter] public bool ExpandSummary { get; set; } = true;
 
     protected override void OnInitialized()
     {
-        if (State == null)
+        if (Context == null)
         {
-            throw new InvalidOperationException($"{nameof(State)} requires a cascading " +
-                                                $"parameter of type {nameof(ModelState)}. For example, you can use {nameof(HtmxValidationSummary)} " +
+            throw new InvalidOperationException($"{nameof(Context)} requires a cascading " +
+                                                $"parameter of type {nameof(FormState)}. For example, you can use {nameof(HtmxValidationSummary)} " +
                                                 $"inside an HtmxForm.");
         }
 
@@ -23,12 +23,12 @@ public class HtmxValidationSummary : HtmxComponent
     {
         RenderFragment fragment = builder =>
         {
-            if(State!.Errors.Count == 0)
+            if(Context!.Errors.Count == 0)
             {
                 return;
             }
 
-            if ((!ShowModelPropertyErrors || State.Errors.Count <= 0) && (ShowModelPropertyErrors || State.Errors.All(x => State
+            if ((!ShowModelPropertyErrors || Context.Errors.Count <= 0) && (ShowModelPropertyErrors || Context.Errors.All(x => Context
                     .ToExpando()
                     .ContainsKey(x.Key))))
             {
@@ -37,9 +37,9 @@ public class HtmxValidationSummary : HtmxComponent
 
             builder.OpenElement(1, "ol");
             builder.AddAttribute(2, "class", "validation-errors");
-            var model = State.ToExpando();
+            var model = Context.ToExpando();
 
-            foreach (var error in State.Errors)
+            foreach (var error in Context.Errors)
             {
                 if (!ShowModelPropertyErrors && model.ContainsKey(error.Key))
                 {

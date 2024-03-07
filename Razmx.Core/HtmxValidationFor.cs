@@ -2,15 +2,15 @@ namespace Razmx.Core;
 
 public class HtmxValidationFor : HtmxComponent
 {
-    [CascadingParameter] private ModelState State { get; set; }
+    [CascadingParameter] private FormState Context { get; set; }
     [Parameter] public string For { get; set; } = default!;
 
     protected override void OnInitialized()
     {
-        if (State == null)
+        if (Context == null)
         {
-            throw new InvalidOperationException($"{nameof(State)} requires a cascading " +
-                                                $"parameter of type {nameof(ModelState)}. For example, you can use {nameof(HtmxValidationFor)} " +
+            throw new InvalidOperationException($"{nameof(Context)} requires a cascading " +
+                                                $"parameter of type {nameof(FormState)}. For example, you can use {nameof(HtmxValidationFor)} " +
                                                 $"inside an HtmxForm.");
         }
 
@@ -26,7 +26,7 @@ public class HtmxValidationFor : HtmxComponent
     {
         RenderFragment fragment = builder =>
         {
-            var inputErrors = State.Errors.Where(error => error.Key == For).Select(error => error.Value).ToList();
+            var inputErrors = Context.Errors.Where(error => error.Key == For).Select(error => error.Value).ToList();
             if (inputErrors.Count <= 0)
             {
                 return;

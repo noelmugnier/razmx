@@ -1,6 +1,6 @@
 namespace Razmx.Core;
 
-public class Hidden : Input
+public class Hidden : HtmxInput
 {
     protected override RenderFragment GenerateFragmentToRender()
     {

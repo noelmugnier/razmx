@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Razmx.App.Pages.Auth;
+using Razmx.App.Pages.Contacts;
 using Razmx.App.Pages.Home;
 using Tailwind;
 using NotFound = Razmx.App.Pages.NotFound;
@@ -64,18 +65,14 @@ app.MapGet("/api/forecasts",
     () => new RazorComponentResult<Forecasts>(new Dictionary<string, object?>()
         { { "Model", ForecastsService.GetNextForecasts() } }));
 
-app.MapPost("/register",
+app.MapPost("/api/register",
     async ([FromForm] RegisterRequest request, [FromServices] AppDbContext dbContext, HttpContext httpContext,
         CancellationToken token, [FromQuery] string? returnUrl = null) =>
     {
         var user = await dbContext.Users.FirstOrDefaultAsync(a => a.UserName == request.Email, token);
         if (user != null)
         {
-            var state = ModelState.Init(request);
-            state.Errors.Add("Email", "Email already in use");
-            state.Errors.Add("Password", "Invalid password");
-
-            return new HtmxFormComponentResult<Register, RegisterRequest>(state);
+            return new HtmxFormComponentResult<Register, RegisterRequest>(request);
         }
 
         user = new IdentityUser(request.Email)
@@ -94,7 +91,7 @@ app.MapPost("/register",
             : httpContext.RedirectTo<Home>();
     });
 
-app.MapPost("/login",
+app.MapPost("/api/login",
     async ([FromForm] LoginRequest request, [FromServices] AppDbContext dbContext, HttpContext httpContext,
         CancellationToken token, [FromQuery] string? returnUrl = null) =>
     {
@@ -102,12 +99,14 @@ app.MapPost("/login",
             a => a.UserName == request.Email && a.PasswordHash == request.Password, token);
         if (user == null)
         {
-            var state = ModelState.Init(request);
-            state.Errors.Add("_", "Invalid username or password");
-            state.Errors.Add("Email", "Invalid username");
-            state.Errors.Add("Password", "Invalid password");
+            var errors = new Dictionary<string, string>
+            {
+                { "_", "Invalid username or password" },
+                { nameof(request.Email), "Invalid username" },
+                { nameof(request.Password), "Invalid password" }
+            };
 
-            return new HtmxFormComponentResult<Login, LoginRequest>(state);
+            return new HtmxFormComponentResult<Login, LoginRequest>(request, errors);
         }
 
         await SignInUser(httpContext, user);
@@ -117,7 +116,7 @@ app.MapPost("/login",
             : httpContext.RedirectTo<Home>();
     });
 
-app.MapPost("/logout", async (HttpContext httpContext) =>
+app.MapPost("/api/logout", async (HttpContext httpContext) =>
 {
     await httpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
     return httpContext.RedirectTo<Home>();
@@ -125,6 +124,13 @@ app.MapPost("/logout", async (HttpContext httpContext) =>
 
 app.MapGet("/api/forecasts/json",
     () => new JsonResult(ForecastsService.GetNextForecasts()));
+
+app.MapPost("/api/contacts", async (HttpContext httpContext, [FromForm] Contact contact, [FromServices] AppDbContext dbContext, CancellationToken token) =>
+{
+    await dbContext.AddAsync(contact, token);
+    await dbContext.SaveChangesAsync(token);
+    return httpContext.NavigateTo<List>();
+});
 
 await app.RunAsync();
 return;

@@ -1,45 +1,40 @@
 @page "/register"
 @using Razmx.App.Pages.Home
-@implements IFormState<RegisterRequest>
 @attribute [RedirectIfAuthenticated<Home>]
 
 <HtmxAppPage>
     <HtmxPageTitle>@Title</HtmxPageTitle>
     <h1 class="mb-8 text-3xl font-bold">@Title</h1>
 
-    <HtmxForm State="State">
+    <HtmxForm State="State" action="/api/register" method="POST">
         <Hidden Name="@nameof(ReturnUrl)" value="@ReturnUrl"/>
 
         <div class="pb-8 pr-6 w-full lg:w-1/2 space-y-2">
-            <label for="@nameof(Email)" class="text-sm font-bold">Email</label>
-            <Input type="text" Name="@nameof(Email)" value="@Email" placeholder="email" required class="relative px-6 py-3 w-full rounded border-gray-300"/>
+            <label for="@nameof(Model.Email)" class="text-sm font-bold">Email</label>
+            <HtmxInput type="text" Name="@nameof(Model.Email)" value="@Model.Email" placeholder="email" required class="relative px-6 py-3 w-full rounded border-gray-300"/>
         </div>
         <div class="pb-8 pr-6 w-full lg:w-1/2 space-y-2">
-            <label for="@nameof(Password)" class="text-sm font-bold">Password</label>
-            <Input type="password" Name="@nameof(Password)" value="@Password" placeholder="password" required class="relative px-6 py-3 w-full rounded border-gray-300"/>
+            <label for="@nameof(Model.Password)" class="text-sm font-bold">Password</label>
+            <HtmxInput type="password" Name="@nameof(Model.Password)" value="@Model.Password" placeholder="password" required class="relative px-6 py-3 w-full rounded border-gray-300"/>
         </div>
         <div class="pb-8 pr-6 w-full lg:w-1/2 space-y-2">
-            <label for="@nameof(Confirm)" class="text-sm font-bold">Confirm</label>
-            <Input type="password" Name="@nameof(Confirm)" value="@Confirm" placeholder="confirm password" required class="relative px-6 py-3 w-full rounded border-gray-300"/>
+            <label for="@nameof(Model.Confirm)" class="text-sm font-bold">Confirm</label>
+            <HtmxInput type="password" Name="@nameof(Model.Confirm)" value="@Model.Confirm" placeholder="confirm password" required class="relative px-6 py-3 w-full rounded border-gray-300"/>
         </div>
 
         <HtmxValidationSummary/>
 
         <div class="flex items-center justify-end px-4 py-4 w-full lg:w-1/2">
             <HtmxLink href="/login" class="px-4 py-2 mx-2 font-medium rounded bg-gray-500 hover:bg-gray-600 text-white transition">Login</HtmxLink>
-            <button type="submit" class="px-4 py-2 mx-2 font-medium rounded bg-blue-500 hover:bg-blue-600 text-white transition">Register</button>
+            <HtmxSubmit class="px-4 py-2 mx-2 font-medium rounded bg-blue-500 hover:bg-blue-600 text-white transition">Register</HtmxSubmit>
         </div>
     </HtmxForm>
 </HtmxAppPage>
 
 @code {
     private static string Title => "Register";
-    private string Email => State.Model.Email;
-    private string Password => State.Model.Password;
-    private string Confirm => State.Model.Confirm;
+    public RegisterRequest Model => State.Model;
 
-    [Parameter] public ModelState<RegisterRequest> State { get; set; } = ModelState.Init(new RegisterRequest());
-
-    [Parameter] public IDictionary<string, string>? Errors { get; set; }
+    [Parameter] public FormState<RegisterRequest> State { get; set; } = FormState.Init(new RegisterRequest());
     [Parameter] public StringValues? ReturnUrl { get; set; }
 }

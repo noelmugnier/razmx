@@ -8,27 +8,36 @@ public class HtmxForm<T> : HtmxComponent
 {
     [CascadingParameter] private HttpContext? HttpContext { get; set; } = default!;
 
-    [Parameter] public ModelState<T>? State { get; set; }
-    [Parameter] public HttpVerb Method { get; set; } = HttpVerb.POST;
+    [Parameter] public FormState<T>? State { get; set; }
     [Parameter] public string? Retarget { get; set; }
-    [Parameter] public bool UseAntiforgeryToken { get; set; } = true;
-    [Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object> AdditionalAttributes { get; set; } = new();
-    [Parameter] public RenderFragment<ModelState<T>> ChildContent { get; set; } = default!;
+    [Parameter] public bool UseAntiForgeryToken { get; set; } = true;
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object> AdditionalAttributes { get; set; } = new();
+
+    [Parameter] public RenderFragment<FormState<T>> ChildContent { get; set; } = default!;
 
     protected override RenderFragment GenerateFragmentToRender()
     {
-        AdditionalAttributes.TryGetValue("action", out var actionValue);
+        if (AdditionalAttributes.TryGetValue("action", out var actionValue)) ;
         var action = actionValue?.ToString() ?? string.Empty;
+
+        if (AdditionalAttributes.TryGetValue("method", out var methodValue)) ;
+        if (Enum.TryParse<HttpVerb>(methodValue?.ToString() ?? "GET", out var method)) ;
+
         if (string.IsNullOrWhiteSpace(action) && !string.IsNullOrWhiteSpace(HttpContext?.Request.Path.Value))
         {
             action = $"{HttpContext.Request.Path.Value}{HttpContext.Request.QueryString}";
         }
 
+        State.Action = action;
+        State.Method = method;
+
         RenderFragment fragment = builder =>
         {
             builder.OpenElement(0, "form");
 
-            switch (Method)
+            switch (method)
             {
                 case HttpVerb.GET:
                     AdditionalAttributes["hx-get"] = action;
@@ -72,16 +81,16 @@ public class HtmxForm<T> : HtmxComponent
                 builder.AddAttribute(1, attribute.Key, attribute.Value);
             }
 
-            if (UseAntiforgeryToken)
+            if (UseAntiForgeryToken)
             {
                 builder.OpenComponent<AntiforgeryToken>(2);
                 builder.CloseComponent();
             }
 
-            builder.OpenComponent<CascadingValue<ModelState<T>>>(6);
-            builder.AddComponentParameter(2, "IsFixed", true);
-            builder.AddComponentParameter(3, "Value", State);
-            builder.AddComponentParameter(4, "ChildContent", ChildContent?.Invoke(State));
+            builder.OpenComponent<CascadingValue<FormState<T>>>(3);
+            builder.AddComponentParameter(4, "IsFixed", true);
+            builder.AddComponentParameter(5, "Value", State);
+            builder.AddComponentParameter(6, "ChildContent", ChildContent?.Invoke(State));
             builder.CloseComponent();
             builder.CloseElement();
         };
